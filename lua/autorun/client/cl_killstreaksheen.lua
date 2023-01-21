@@ -153,16 +153,20 @@ hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply",function(ply)
 	if ks_bool == false then
 		leye:StopParticleEmission()
 		reye:StopParticleEmission()
-		if IsValid(pcf_l) then leye:StopParticleEmission() end
-		if IsValid(pcf_r) then reye:StopParticleEmission() end
+		if IsValid(pcf_l) or IsValid(pcf_r) or IsValid(pcf2_l) or IsValid(pcf2_r) then leye:StopParticleEmission() reye:StopParticleEmission() end
+		
+		local pcf_l = CreateParticleSystem(leye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, 0, leye:GetPos())
+		local pcf_r = CreateParticleSystem(reye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, 0, reye:GetPos())
+		local pcf2_l = CreateParticleSystem(leye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, 0, leye:GetPos())
+		local pcf2_r = CreateParticleSystem(reye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, 0, reye:GetPos())
+		
 		if streak >= 5 and streak <= 9 then
-			local pcf_l = CreateParticleSystem(leye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, 0, leye:GetPos())
+			if IsValid(pcf2_l) then leye:StopParticleEmission() end
+			if IsValid(pcf2_r) then reye:StopParticleEmission() end
 			if pcf_l:IsValid() then
 				pcf_l:SetControlPoint(9,eye_color1[color])
 				pcf_l:StartEmission()
 			end
-				
-			local pcf_r = CreateParticleSystem(reye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, 0, reye:GetPos())
 			if pcf_r:IsValid() then
 				pcf_r:SetControlPoint(9,eye_color1[color])
 				pcf_r:StartEmission()
@@ -172,16 +176,14 @@ hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply",function(ply)
 			reye:StopParticleEmission()
 			if IsValid(pcf_l) then leye:StopParticleEmission() end
 			if IsValid(pcf_r) then reye:StopParticleEmission() end
-			local pcf_l = CreateParticleSystem(leye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, 0, leye:GetPos())
-			if pcf_l:IsValid() then
-				pcf_l:SetControlPoint(9,eye_color2[color])
-				pcf_l:StartEmission()
+			if pcf2_l:IsValid() then
+				pcf2_l:SetControlPoint(9,eye_color2[color])
+				pcf2_l:StartEmission()
 			end
 				
-			local pcf_r = CreateParticleSystem(reye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, 0, reye:GetPos())
-			if pcf_r:IsValid() then
-				pcf_r:SetControlPoint(9,eye_color2[color])
-				pcf_r:StartEmission()
+			if pcf2_r:IsValid() then
+				pcf2_r:SetControlPoint(9,eye_color2[color])
+				pcf2_r:StartEmission()
 			end
 		end
 	end
