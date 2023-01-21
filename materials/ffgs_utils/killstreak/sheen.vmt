@@ -1,0 +1,26 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "ffgs_utils/killstreak/null"
+
+	"$additive" "1"
+
+	"$envmap" "ffgs_utils/killstreak/sheen_cubemap"
+	"$envmapmask" "ffgs_utils/killstreak/sheen_anim"
+	"$envmaptint" "[0 0 0]"
+	"$envmapmaskframe" "60"
+	"$envindex" "1"
+
+	"Proxies"
+	{
+		"AnimatedTexture"
+		{
+			"animatedtexturevar" "$envmapmask"
+			"animatedtextureframenumvar" "$envmapmaskframe"
+			"animatedtextureframerate" "25"
+		}
+		"KillStreakGlowColor"
+		{
+			"resultVar" "$envmaptint"
+		}
+	}
+}
