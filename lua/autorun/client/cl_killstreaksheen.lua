@@ -26,7 +26,7 @@ checkMaterial()
 cvars.AddChangeCallback(cv_matmode:GetName(), checkMaterial, cv_matmode:GetName())
 cvars.AddChangeCallback(cv_specular:GetName(), checkMaterial, cv_matmode:GetName())
 
-local minstreak, maxstreak = 0, 20
+local minstreak, maxstreak = 0, 15
 
 local colors = {
 	["team_red"]		= Vector(200/255, 20/255,  15/255), -- Team Shine RED

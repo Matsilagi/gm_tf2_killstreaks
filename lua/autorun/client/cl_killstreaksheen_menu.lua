@@ -42,7 +42,7 @@ local function sheenControl(panel)
 	local colorSelectCombo = {
 		Options = {},
 		CVars = {},
-		Label = "Sheen Color",
+		Label = "Sheen/Effect Color",
 		MenuButton = "0",
 		Folder = "Killstreak Sheen Colors"
 	}
@@ -60,7 +60,7 @@ local function sheenControl(panel)
 	local effectSelectCombo = {
 		Options = {},
 		CVars = {},
-		Label = "Sheen Effect",
+		Label = "Killstreak Effect",
 		MenuButton = "0",
 		Folder = "Killstreak Effects"
 	}
