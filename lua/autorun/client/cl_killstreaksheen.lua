@@ -79,7 +79,7 @@ leye:SetNoDraw( true )
 local reye = ClientsideModel( "models/dav0r/hoverball.mdl" )
 reye:SetNoDraw( true )
 
-hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply",function(ply)
+local function DrawKillstreakParticles(ply)
 	local ks_bool = ply:GetNW2Bool("killstreak_effects_created",false)
 	if not IsValid(ply) or ply:GetNoDraw() or bool == true then leye:StopParticleEmission() reye:StopParticleEmission() return end
 	if not ply:Alive() then leye:StopParticleEmission() reye:StopParticleEmission() return end
@@ -158,15 +158,17 @@ hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply",function(ply)
 		reye:StopParticleEmission()
 		if IsValid(pcf_l) or IsValid(pcf_r) or IsValid(pcf2_l) or IsValid(pcf2_r) then leye:StopParticleEmission() reye:StopParticleEmission() end
 		
-		
 		local pcf_l = CreateParticleSystem(leye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, 0, leye:GetPos())
 		local pcf2_l = CreateParticleSystem(leye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, 0, leye:GetPos())
 		local pcf_r = CreateParticleSystem(reye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, 0, reye:GetPos())
 		local pcf2_r = CreateParticleSystem(reye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, 0, reye:GetPos())
+		if eye_color1[color] == nil then return end
+		if eye_color2[color] == nil then return end
 		
 		if streak >= 5 and streak <= 9 then
 			if IsValid(pcf2_l) then leye:StopParticleEmission() end
 			if IsValid(pcf2_r) then reye:StopParticleEmission() end
+			
 			if pcf_l:IsValid() then
 				pcf_l:SetControlPoint(9,eye_color1[color])
 				if not cv_singleye:GetBool() then
@@ -182,6 +184,7 @@ hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply",function(ply)
 			reye:StopParticleEmission()
 			if IsValid(pcf_l) then leye:StopParticleEmission() end
 			if IsValid(pcf_r) then reye:StopParticleEmission() end
+			
 			if pcf2_l:IsValid() then
 				pcf2_l:SetControlPoint(9,eye_color2[color])
 				if not cv_singleye:GetBool() then
@@ -197,7 +200,8 @@ hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply",function(ply)
 	end
 			
 	ply:SetNW2Bool("killstreak_effects_created",true)
-end)
+end
+hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply",DrawKillstreakParticles)
 
 --Sheen
 local function DrawKillstreakSheen(ent, owner, override)
