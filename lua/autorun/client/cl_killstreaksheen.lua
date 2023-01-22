@@ -108,9 +108,11 @@ hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply",function(ply)
 	local offset_reye_forward = cv_offset_reye_forward:GetFloat()
 			
 	local attach_id = ply:LookupAttachment('eyes')
-	if not attach_id then return end
+	if not attach_id then leye:StopParticleEmission() reye:StopParticleEmission() return end
 			
 	local attach = ply:GetAttachment(attach_id)
+	if not attach then leye:StopParticleEmission() reye:StopParticleEmission() return end
+	
 	--Left Eye
 	local attpos = attach.Pos
 	local attang = attach.Ang
