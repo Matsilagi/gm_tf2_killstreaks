@@ -6,6 +6,7 @@ local cv_matmode = CreateClientConVar("cl_killstreak_oldmat", "0", true, false)
 local cv_effect = GetConVar("cl_killstreak_effect")
 local cv_specular = GetConVar("mat_specular")
 local cv_debugmodel = GetConVar("cl_killstreak_eyeparticle_debug")
+local cv_singleye = GetConVar("cl_killstreak_eyepatch")
 local glow = Material("ffgs_utils/killstreak/sheen")
 
 --left eye
@@ -122,7 +123,7 @@ hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply",function(ply)
 	leye:SetRenderOrigin(attpos)
 	leye:SetRenderAngles(attang)
 	leye:SetupBones()
-	if cv_debugmodel:GetBool() then
+	if cv_debugmodel:GetBool() and not cv_singleye:GetBool() then
 		leye:DrawModel()
 	else
 		leye:SetNoDraw(true)
@@ -155,9 +156,10 @@ hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply",function(ply)
 		reye:StopParticleEmission()
 		if IsValid(pcf_l) or IsValid(pcf_r) or IsValid(pcf2_l) or IsValid(pcf2_r) then leye:StopParticleEmission() reye:StopParticleEmission() end
 		
+		
 		local pcf_l = CreateParticleSystem(leye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, 0, leye:GetPos())
-		local pcf_r = CreateParticleSystem(reye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, 0, reye:GetPos())
 		local pcf2_l = CreateParticleSystem(leye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, 0, leye:GetPos())
+		local pcf_r = CreateParticleSystem(reye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, 0, reye:GetPos())
 		local pcf2_r = CreateParticleSystem(reye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, 0, reye:GetPos())
 		
 		if streak >= 5 and streak <= 9 then
@@ -165,7 +167,9 @@ hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply",function(ply)
 			if IsValid(pcf2_r) then reye:StopParticleEmission() end
 			if pcf_l:IsValid() then
 				pcf_l:SetControlPoint(9,eye_color1[color])
-				pcf_l:StartEmission()
+				if not cv_singleye:GetBool() then
+					pcf_l:StartEmission()
+				end
 			end
 			if pcf_r:IsValid() then
 				pcf_r:SetControlPoint(9,eye_color1[color])
@@ -178,7 +182,9 @@ hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply",function(ply)
 			if IsValid(pcf_r) then reye:StopParticleEmission() end
 			if pcf2_l:IsValid() then
 				pcf2_l:SetControlPoint(9,eye_color2[color])
-				pcf2_l:StartEmission()
+				if not cv_singleye:GetBool() then
+					pcf2_l:StartEmission()
+				end
 			end
 				
 			if pcf2_r:IsValid() then

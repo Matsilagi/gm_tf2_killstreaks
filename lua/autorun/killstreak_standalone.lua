@@ -5,6 +5,7 @@
 local cv_color = CreateClientConVar("cl_killstreak_color", "team_red", true, true)
 local cv_effect = CreateClientConVar("cl_killstreak_effect", "killstreak_t1_",true, true)
 local cv_debugmodel = CreateClientConVar("cl_killstreak_eyeparticle_debug","0",true,false)
+local cv_singleye = CreateClientConVar("cl_killstreak_eyepatch","0",true,false)
 
 if CLIENT then
 	local cv_draw = CreateClientConVar("cl_killstreak_hud", "1", true, false)

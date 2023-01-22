@@ -7,6 +7,7 @@ local cv_effect = GetConVar("cl_killstreak_effect")
 local cv_matmode = GetConVar("cl_killstreak_oldmat")
 local cv_streakhud = GetConVar("cl_killstreak_hud")
 local cv_debugmodel = GetConVar("cl_killstreak_eyeparticle_debug")
+local cv_singleye = GetConVar("cl_killstreak_eyepatch")
 
 local cv_offset_leye_right = GetConVar("cl_killstreak_offset_1_right")
 local cv_offset_leye_up = GetConVar("cl_killstreak_offset_1_up")
@@ -81,15 +82,15 @@ local function sheenControl(panel)
 	panel:NumSlider( "Offset R Right", "cl_killstreak_offset_2_right", -100.0, 100.0 )
 	panel:NumSlider( "Offset R Up", "cl_killstreak_offset_2_up", -100.0, 100.0 )
 	panel:NumSlider( "Offset R Forward", "cl_killstreak_offset_2_forward", -100.0, 100.0)
-
-	panel:AddControl("Button", {
-		Label = "Apply Sheen Changes",
-		Command = "killstreak_applycolor"
-	})
 	
 	panel:AddControl("CheckBox", {
-		Label = "Eye Position Debug",
-		Command = cv_debugmodel:GetName()
+		Label = "Disable Left Eye",
+		Command = cv_singleye:GetName()
+	})
+
+	panel:AddControl("Button", {
+		Label = "Apply Killstreak Changes",
+		Command = "killstreak_applycolor"
 	})
 
 	panel:AddControl("Label", {Text = ""}) -- spacer
@@ -108,6 +109,17 @@ local function sheenControl(panel)
 
 	panel:AddControl("Label", {
 		Text = "Enable this if sheen is not working for you."
+	})
+	
+	panel:AddControl("Label", {Text = ""}) -- spacer
+	
+	panel:AddControl("CheckBox", {
+		Label = "Eye Position Debug",
+		Command = cv_debugmodel:GetName()
+	})
+	
+	panel:AddControl("Label", {
+		Text = "Enable this to position one (or both) eyes."
 	})
 end
 
