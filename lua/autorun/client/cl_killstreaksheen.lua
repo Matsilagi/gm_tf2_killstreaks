@@ -73,10 +73,10 @@ local effects = {
 }
 
 --Eye Killstreaks
-local leye = ClientsideModel( "models/dav0r/hoverball.mdl" )
+local leye = ClientsideModel( "models/dummy.mdl" )
 leye:SetNoDraw( true )
 
-local reye = ClientsideModel( "models/dav0r/hoverball.mdl" )
+local reye = ClientsideModel( "models/dummy.mdl" )
 reye:SetNoDraw( true )
 
 local function DrawKillstreakParticles(ply)
@@ -158,10 +158,10 @@ local function DrawKillstreakParticles(ply)
 		reye:StopParticleEmission()
 		if IsValid(pcf_l) or IsValid(pcf_r) or IsValid(pcf2_l) or IsValid(pcf2_r) then leye:StopParticleEmission() reye:StopParticleEmission() end
 		
-		local pcf_l = CreateParticleSystem(leye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, 0, leye:GetPos())
-		local pcf2_l = CreateParticleSystem(leye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, 0, leye:GetPos())
-		local pcf_r = CreateParticleSystem(reye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, 0, reye:GetPos())
-		local pcf2_r = CreateParticleSystem(reye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, 0, reye:GetPos())
+		local pcf_l = CreateParticleSystem(leye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, leye:LookupAttachment("dummy"), leye:GetPos())
+		local pcf2_l = CreateParticleSystem(leye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, leye:LookupAttachment("dummy"), leye:GetPos())
+		local pcf_r = CreateParticleSystem(reye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, reye:LookupAttachment("dummy"), reye:GetPos())
+		local pcf2_r = CreateParticleSystem(reye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, reye:LookupAttachment("dummy"), reye:GetPos())
 		if eye_color1[color] == nil then return end
 		if eye_color2[color] == nil then return end
 		
