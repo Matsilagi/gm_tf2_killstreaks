@@ -43,9 +43,9 @@ local function sheenControl(panel)
 	local colorSelectCombo = {
 		Options = {},
 		CVars = {},
-		Label = "Sheen/Effect Color",
+		Label = "Killstreaker/Sheen Color",
 		MenuButton = "0",
-		Folder = "Killstreak Sheen Colors"
+		Folder = "Killstreak Colors"
 	}
 	for k,v in pairs(colors) do
 		language.Add("kssheen.color." .. k, v)
@@ -61,7 +61,7 @@ local function sheenControl(panel)
 	local effectSelectCombo = {
 		Options = {},
 		CVars = {},
-		Label = "Killstreak Effect",
+		Label = "Killstreaker",
 		MenuButton = "0",
 		Folder = "Killstreak Effects"
 	}
@@ -86,6 +86,10 @@ local function sheenControl(panel)
 	panel:AddControl("CheckBox", {
 		Label = "Disable Left Eye",
 		Command = cv_singleye:GetName()
+	})
+	
+	panel:AddControl("Label", {
+		Text = "Disables the Left eye and centers the beam emission (for single-eyed models)."
 	})
 
 	panel:AddControl("Button", {

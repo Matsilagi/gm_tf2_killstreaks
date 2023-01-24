@@ -27,7 +27,7 @@ checkMaterial()
 cvars.AddChangeCallback(cv_matmode:GetName(), checkMaterial, cv_matmode:GetName())
 cvars.AddChangeCallback(cv_specular:GetName(), checkMaterial, cv_matmode:GetName())
 
-local minstreak, maxstreak = 0, 15
+local minstreak, maxstreak = 0, 20
 
 local colors = {
 	["team_red"]		= Vector(200/255, 20/255,  15/255), -- Team Shine RED
@@ -156,12 +156,19 @@ local function DrawKillstreakParticles(ply)
 	if ks_bool == false then
 		leye:StopParticleEmission()
 		reye:StopParticleEmission()
+		local att_l = leye:LookupAttachment("eyeglow_L")
+		local att_r = reye:LookupAttachment("eyeglow_R")
+		
+		if cv_singleye:GetBool() then
+			att_r = reye:LookupAttachment("eyeglow_C")
+		end
+		
 		if IsValid(pcf_l) or IsValid(pcf_r) or IsValid(pcf2_l) or IsValid(pcf2_r) then leye:StopParticleEmission() reye:StopParticleEmission() end
 		
-		local pcf_l = CreateParticleSystem(leye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, leye:LookupAttachment("dummy"), leye:GetPos())
-		local pcf2_l = CreateParticleSystem(leye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, leye:LookupAttachment("dummy"), leye:GetPos())
-		local pcf_r = CreateParticleSystem(reye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, reye:LookupAttachment("dummy"), reye:GetPos())
-		local pcf2_r = CreateParticleSystem(reye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, reye:LookupAttachment("dummy"), reye:GetPos())
+		local pcf_l = CreateParticleSystem(leye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, att_l, leye:GetPos())
+		local pcf2_l = CreateParticleSystem(leye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, att_l, leye:GetPos())
+		local pcf_r = CreateParticleSystem(reye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, att_r, reye:GetPos())
+		local pcf2_r = CreateParticleSystem(reye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, att_r, reye:GetPos())
 		if eye_color1[color] == nil then return end
 		if eye_color2[color] == nil then return end
 		
