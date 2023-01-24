@@ -2,6 +2,7 @@
 -- Created by YuRaNnNzZZ
 -- Colors and Eye Particles Code by Matsilagi
 
+--CONVARS SETUP
 local cv_matmode = CreateClientConVar("cl_killstreak_oldmat", "0", true, false)
 local cv_effect = GetConVar("cl_killstreak_effect")
 local cv_color = GetConVar("cl_killstreak_color")
@@ -9,16 +10,14 @@ local cv_specular = GetConVar("mat_specular")
 local cv_debugmodel = GetConVar("cl_killstreak_eyeparticle_debug")
 local cv_singleye = GetConVar("cl_killstreak_eyepatch")
 local glow = Material("ffgs_utils/killstreak/sheen")
-
---left eye
 local offset_1_right = CreateClientConVar("cl_killstreak_offset_1_right", "-1.50", true, true)
 local offset_1_up = CreateClientConVar("cl_killstreak_offset_1_up", "0.0", true, true)
 local offset_1_forward = CreateClientConVar("cl_killstreak_offset_1_forward", "1.0", true, true)
---right eye
 local offset_2_right = CreateClientConVar("cl_killstreak_offset_2_right", "1.50", true, true)
 local offset_2_up = CreateClientConVar("cl_killstreak_offset_2_up", "0.0", true, true)
 local offset_2_forward = CreateClientConVar("cl_killstreak_offset_2_forward", "1.0", true, true)
 
+--MATERIAL CHECK
 local function checkMaterial()
 	local legacy = cv_matmode:GetBool() or not cv_specular:GetBool()
 	glow = Material("ffgs_utils/killstreak/sheen" .. (legacy and "_legacy" or ""))
@@ -28,6 +27,7 @@ checkMaterial()
 cvars.AddChangeCallback(cv_matmode:GetName(), checkMaterial, cv_matmode:GetName())
 cvars.AddChangeCallback(cv_specular:GetName(), checkMaterial, cv_matmode:GetName())
 
+--COLOR TABLE AND STREAK VALUES
 local minstreak, maxstreak = 0, 20
 
 local colors = {
@@ -73,7 +73,7 @@ local effects = {
 	["killstreak_t7_"] = "Hypno-Beam"
 }
 
---Eye Killstreaks
+--EYE KILLSTREAKS / PARTICLE EFFECTS
 local leye = ClientsideModel( "models/dummy.mdl" )
 leye:SetNoDraw( true )
 
@@ -238,7 +238,30 @@ local function DrawKillstreakParticles(ply)
 end
 hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply",DrawKillstreakParticles)
 
---Sheen
+--WEAPON/VM AND WM SHEENS
+matproxy.Add({
+	name = "KillStreakGlowColor",
+	init = function(self, mat, values)
+		self.ResultTo = values.resultvar
+	end,
+	bind = function(self, mat, ent)
+		local _ent = ent
+		if ent and ent:IsValid() and ent:GetOwner() and ent:GetOwner():IsPlayer() then
+			_ent = ent:GetOwner()
+		end
+		if _ent and _ent:IsValid() and _ent:IsPlayer() then
+			local streak = math.min(_ent:GetNW2Int("killstreak", 0), maxstreak)
+			local colorvar = _ent:GetNW2String("killstreakcolor", nil)
+			local color = colors[colorvar]
+			local ratio = streak / maxstreak
+
+			if colors[colorvar] and streak > 0 and streak >= minstreak then
+				mat:SetVector(self.ResultTo, Vector(color.x * ratio, color.y * ratio, color.z * ratio))
+			end
+		end
+	end
+})
+
 local function DrawKillstreakSheen(ent, owner, override)
 	if not IsValid(ent) or (ent:GetNoDraw() and not override) then return end
 	if not IsValid(owner) then owner = ent:GetOwner() or ent end
@@ -269,30 +292,9 @@ local function DrawFPWeaponSheen(vm, ply, wep)
 end
 hook.Add("PostDrawViewModel", "ffgs_utils_killstreak_fp", DrawFPWeaponSheen)
 
-matproxy.Add({
-	name = "KillStreakGlowColor",
-	init = function(self, mat, values)
-		self.ResultTo = values.resultvar
-	end,
-	bind = function(self, mat, ent)
-		local _ent = ent
-		if ent and ent:IsValid() and ent:GetOwner() and ent:GetOwner():IsPlayer() then
-			_ent = ent:GetOwner()
-		end
-		if _ent and _ent:IsValid() and _ent:IsPlayer() then
-			local streak = math.min(_ent:GetNW2Int("killstreak", 0), maxstreak)
-			local colorvar = _ent:GetNW2String("killstreakcolor", nil)
-			local color = colors[colorvar]
-			local ratio = streak / maxstreak
+--PATCHES SECTION
 
-			if colors[colorvar] and streak > 0 and streak >= minstreak then
-				mat:SetVector(self.ResultTo, Vector(color.x * ratio, color.y * ratio, color.z * ratio))
-			end
-		end
-	end
-})
-
--- FAS 20 compat
+-- FAS 2.0 COMPATIBILITY PATCH
 if file.Exists("weapons/fas2_base/shared.lua", "LUA") then
 	local cv_fas2_override = CreateClientConVar("cl_killstreak_patch_fas2", 1, true, false)
 
@@ -335,7 +337,7 @@ if file.Exists("weapons/fas2_base/shared.lua", "LUA") then
 	hook.Add("InitPostEntity", "ffgs_utils_killstreak_patch_fas20", PatchFAS20Draw)
 end
 
--- CW 2.0 compat
+-- CUSTOMIZABLE WEAPONRY 2.0 COMPATIBILITY PATCH
 if file.Exists("weapons/cw_base/shared.lua", "LUA") then
 	local cv_cw20_override = CreateClientConVar("cl_killstreak_patch_cw20", 1, true, false)
 

@@ -2,13 +2,13 @@
 -- Created by YuRaNnNzZZ
 -- Color, effect names and menu code changes by Matsilagi
 
+--CONVAR SETUP
 local cv_color = GetConVar("cl_killstreak_color")
 local cv_effect = GetConVar("cl_killstreak_effect")
 local cv_matmode = GetConVar("cl_killstreak_oldmat")
 local cv_streakhud = GetConVar("cl_killstreak_hud")
 local cv_debugmodel = GetConVar("cl_killstreak_eyeparticle_debug")
 local cv_singleye = GetConVar("cl_killstreak_eyepatch")
-
 local cv_offset_leye_right = GetConVar("cl_killstreak_offset_1_right")
 local cv_offset_leye_up = GetConVar("cl_killstreak_offset_1_up")
 local cv_offset_leye_forward = GetConVar("cl_killstreak_offset_1_forward")
@@ -16,6 +16,7 @@ local cv_offset_reye_right = GetConVar("cl_killstreak_offset_2_right")
 local cv_offset_reye_up = GetConVar("cl_killstreak_offset_2_up")
 local cv_offset_reye_forward = GetConVar("cl_killstreak_offset_2_forward")
 
+--OPTIONS TABLES
 local colors = {
 	["team_red"]		= "Team Shine RED",
 	["team_blue"]		= "Team Shine BLU",
@@ -39,6 +40,7 @@ local effects = {
 	["none"]		   = " [ Disable Effect ] ",
 }
 
+--PANEL CONTENTS
 local function sheenControl(panel)
 	local colorSelectCombo = {
 		Options = {},
