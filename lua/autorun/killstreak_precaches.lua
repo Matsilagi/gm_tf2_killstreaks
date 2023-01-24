@@ -2,7 +2,6 @@
 -- Created by YuRaNnNzZZ
 
 game.AddParticles( "particles/tf2_killstreaks.pcf" )
-
 PrecacheParticleSystem("killstreak_t1_lvl1")
 PrecacheParticleSystem("killstreak_t1_lvl2")
 PrecacheParticleSystem("killstreak_t2_lvl1")

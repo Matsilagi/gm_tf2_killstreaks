@@ -9,12 +9,12 @@ local cv_matmode = GetConVar("cl_killstreak_oldmat")
 local cv_streakhud = GetConVar("cl_killstreak_hud")
 local cv_debugmodel = GetConVar("cl_killstreak_eyeparticle_debug")
 local cv_singleye = GetConVar("cl_killstreak_eyepatch")
-local cv_offset_leye_right = GetConVar("cl_killstreak_offset_1_right")
-local cv_offset_leye_up = GetConVar("cl_killstreak_offset_1_up")
-local cv_offset_leye_forward = GetConVar("cl_killstreak_offset_1_forward")
-local cv_offset_reye_right = GetConVar("cl_killstreak_offset_2_right")
-local cv_offset_reye_up = GetConVar("cl_killstreak_offset_2_up")
-local cv_offset_reye_forward = GetConVar("cl_killstreak_offset_2_forward")
+local cv_offset_leye_right = GetConVar("cl_killstreak_offset_l_right")
+local cv_offset_leye_up = GetConVar("cl_killstreak_offset_l_up")
+local cv_offset_leye_forward = GetConVar("cl_killstreak_offset_l_forward")
+local cv_offset_reye_right = GetConVar("cl_killstreak_offset_r_right")
+local cv_offset_reye_up = GetConVar("cl_killstreak_offset_r_up")
+local cv_offset_reye_forward = GetConVar("cl_killstreak_offset_r_forward")
 
 --OPTIONS TABLES
 local colors = {
@@ -78,12 +78,12 @@ local function sheenControl(panel)
 	end
 	panel:AddControl("ComboBox", effectSelectCombo)
 	
-	panel:NumSlider( "Offset L Right", "cl_killstreak_offset_1_right", -100.0, 100.0 )
-	panel:NumSlider( "Offset L Up", "cl_killstreak_offset_1_up", -100.0, 100.0 )
-	panel:NumSlider( "Offset L Forward", "cl_killstreak_offset_1_forward", -100.0, 100.0 )
-	panel:NumSlider( "Offset R Right", "cl_killstreak_offset_2_right", -100.0, 100.0 )
-	panel:NumSlider( "Offset R Up", "cl_killstreak_offset_2_up", -100.0, 100.0 )
-	panel:NumSlider( "Offset R Forward", "cl_killstreak_offset_2_forward", -100.0, 100.0)
+	panel:NumSlider( "Offset L Right", "cl_killstreak_offset_l_right", -100.0, 100.0 )
+	panel:NumSlider( "Offset L Up", "cl_killstreak_offset_l_up", -100.0, 100.0 )
+	panel:NumSlider( "Offset L Forward", "cl_killstreak_offset_l_forward", -100.0, 100.0 )
+	panel:NumSlider( "Offset R Right", "cl_killstreak_offset_r_right", -100.0, 100.0 )
+	panel:NumSlider( "Offset R Up", "cl_killstreak_offset_r_up", -100.0, 100.0 )
+	panel:NumSlider( "Offset R Forward", "cl_killstreak_offset_r_forward", -100.0, 100.0)
 	
 	panel:AddControl("CheckBox", {
 		Label = "Disable Left Eye",
