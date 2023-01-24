@@ -81,39 +81,36 @@ local reye = ClientsideModel( "models/dummy.mdl" )
 reye:SetNoDraw( true )
 
 local function DrawKillstreakParticles(ply)
-	
-	if not IsValid(ply) or ply:GetNoDraw() then return end
-	if not ply:Alive() then return end
-	
+	--SETUP
 	local streak = math.Clamp(ply:GetNW2Int("killstreak", 0), 0, maxstreak)
 	local color = ply:GetNW2String("killstreakcolor", nil)
 	local effect_name = ply:GetNW2String("killstreakeffect",nil)
-			
-	if color == nil or color == "none" then return end
-	if effect_name == nil or effect_name == "none" then return end
-	if eye_color1[color] == nil then return end
-	if eye_color2[color] == nil then return end
-	
-	--OFFSETS
 	local cv_offset_leye_right = GetConVar("cl_killstreak_offset_1_right")
 	local cv_offset_leye_up = GetConVar("cl_killstreak_offset_1_up")
 	local cv_offset_leye_forward = GetConVar("cl_killstreak_offset_1_forward")
 	local offset_leye_right = cv_offset_leye_right:GetFloat()
 	local offset_leye_up = cv_offset_leye_up:GetFloat()
 	local offset_leye_forward = cv_offset_leye_forward:GetFloat()
-			
 	local cv_offset_reye_right = GetConVar("cl_killstreak_offset_2_right")
 	local cv_offset_reye_up = GetConVar("cl_killstreak_offset_2_up")
 	local cv_offset_reye_forward = GetConVar("cl_killstreak_offset_2_forward")
 	local offset_reye_right = cv_offset_reye_right:GetFloat()
 	local offset_reye_up = cv_offset_reye_up:GetFloat()
 	local offset_reye_forward = cv_offset_reye_forward:GetFloat()
-			
 	local attach_id = ply:LookupAttachment('eyes')
-	if not attach_id or attach_id == nil then return end --clean
-			
 	local attach = ply:GetAttachment(attach_id)
-	if not attach or attach == nil then return end --clean
+	
+	--INITIAL CHECKS AND EFFECT CONTROL
+	if not IsValid(ply) or ply:GetNoDraw() then leye:StopParticleEmission() reye:StopParticleEmission() return end
+	if not ply:Alive() then leye:StopParticleEmission() reye:StopParticleEmission() return end
+	if color == nil or color == "none" then leye:StopParticleEmission() reye:StopParticleEmission() return end
+	if effect_name == nil or effect_name == "none" then leye:StopParticleEmission() reye:StopParticleEmission() return end
+	if eye_color1[color] == nil then leye:StopParticleEmission() reye:StopParticleEmission() return end
+	if eye_color2[color] == nil then leye:StopParticleEmission() reye:StopParticleEmission() return end
+	if not attach_id or attach_id == nil then leye:StopParticleEmission() reye:StopParticleEmission() return end
+	if not attach or attach == nil then leye:StopParticleEmission() reye:StopParticleEmission() return end
+	
+	--CREATION: MODELS
 	
 	--Left Eye
 	local attpos = attach.Pos
@@ -134,7 +131,7 @@ local function DrawKillstreakParticles(ply)
 	end
 	leye:SetRenderOrigin()
 	leye:SetRenderAngles()
-			
+	
 	--Right Eye
 	local attpos2 = attach.Pos
 	local attang2 = attach.Ang
@@ -161,6 +158,7 @@ local function DrawKillstreakParticles(ply)
 		att_r = reye:LookupAttachment("eyeglow_C")
 	end
 	
+	--CREATION AND CHECK: PARTICLE STREAKS
 	if streak >= 5 and streak <= 9 then
 		if not IsValid(pcf_l) and not cv_singleye:GetBool() then 
 			pcf_l = CreateParticleSystem(leye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, att_l, leye:GetPos())
@@ -177,7 +175,6 @@ local function DrawKillstreakParticles(ply)
 		if IsValid(pcf_l) and cv_singleye:GetBool() then
 			pcf_l:StopEmission()
 		end
-		
 	elseif streak >= 10 then
 		if IsValid(pcf_l) then
 			pcf_l:StopEmission()
@@ -218,6 +215,25 @@ local function DrawKillstreakParticles(ply)
 		if IsValid(pcf2_r) then
 			pcf2_r:StopEmission()
 		end		
+	end
+	
+	--ADDITIONAL CHECK: PARTICLE UPDATE
+	if cv_color:GetString() != ply:GetNW2String("killstreakcolor", nil) or cv_effect:GetString() != ply:GetNW2String("killstreakeffect", nil) then
+		if IsValid(pcf_l) then
+			pcf_l:StopEmission()
+		end
+		
+		if IsValid(pcf_r) then
+			pcf_r:StopEmission()
+		end		
+		
+		if IsValid(pcf2_l) or cv_singleye:GetBool() then
+			pcf2_l:StopEmission()
+		end
+		
+		if IsValid(pcf2_r) then
+			pcf2_r:StopEmission()
+		end
 	end
 end
 hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply",DrawKillstreakParticles)

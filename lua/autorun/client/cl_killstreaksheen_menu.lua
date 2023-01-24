@@ -100,7 +100,7 @@ local function sheenControl(panel)
 	})
 	
 	panel:AddControl("Label", {
-		Text = "Effects will change on next respawn."
+		Text = "Particles will re-appear upon applying changes."
 	})
 
 	panel:AddControl("Label", {Text = ""}) -- spacer
