@@ -4,6 +4,7 @@
 
 local cv_matmode = CreateClientConVar("cl_killstreak_oldmat", "0", true, false)
 local cv_effect = GetConVar("cl_killstreak_effect")
+local cv_color = GetConVar("cl_killstreak_color")
 local cv_specular = GetConVar("mat_specular")
 local cv_debugmodel = GetConVar("cl_killstreak_eyeparticle_debug")
 local cv_singleye = GetConVar("cl_killstreak_eyepatch")
@@ -80,18 +81,19 @@ local reye = ClientsideModel( "models/dummy.mdl" )
 reye:SetNoDraw( true )
 
 local function DrawKillstreakParticles(ply)
-	local ks_bool = ply:GetNW2Bool("killstreak_effects_created",false)
-	if not IsValid(ply) or ply:GetNoDraw() or bool == true then leye:StopParticleEmission() reye:StopParticleEmission() return end
-	if not ply:Alive() then leye:StopParticleEmission() reye:StopParticleEmission() return end
 	
-	--if not IsValid(owner) then owner = ent:GetOwner() or ent end
+	if not IsValid(ply) or ply:GetNoDraw() then return end
+	if not ply:Alive() then return end
+	
 	local streak = math.Clamp(ply:GetNW2Int("killstreak", 0), 0, maxstreak)
 	local color = ply:GetNW2String("killstreakcolor", nil)
 	local effect_name = ply:GetNW2String("killstreakeffect",nil)
-	--local headbone = plymodel:GetLookupBone("ValveBiped.Bip01_Head1")
 			
-	if color == nil or color == "none" then leye:StopParticleEmission() reye:StopParticleEmission() return end
-	if effect_name == nil or effect_name == "none" then leye:StopParticleEmission() reye:StopParticleEmission() return end
+	if color == nil or color == "none" then return end
+	if effect_name == nil or effect_name == "none" then return end
+	if eye_color1[color] == nil then return end
+	if eye_color2[color] == nil then return end
+	
 	--OFFSETS
 	local cv_offset_leye_right = GetConVar("cl_killstreak_offset_1_right")
 	local cv_offset_leye_up = GetConVar("cl_killstreak_offset_1_up")
@@ -108,10 +110,10 @@ local function DrawKillstreakParticles(ply)
 	local offset_reye_forward = cv_offset_reye_forward:GetFloat()
 			
 	local attach_id = ply:LookupAttachment('eyes')
-	if not attach_id or attach_id == nil then leye:StopParticleEmission() reye:StopParticleEmission() return end
+	if not attach_id or attach_id == nil then return end --clean
 			
 	local attach = ply:GetAttachment(attach_id)
-	if not attach or attach == nil then leye:StopParticleEmission() reye:StopParticleEmission() return end
+	if not attach or attach == nil then return end --clean
 	
 	--Left Eye
 	local attpos = attach.Pos
@@ -153,60 +155,70 @@ local function DrawKillstreakParticles(ply)
 	reye:SetRenderOrigin()
 	reye:SetRenderAngles()
 	
-	if ks_bool == false then
-		leye:StopParticleEmission()
-		reye:StopParticleEmission()
-		local att_l = leye:LookupAttachment("eyeglow_L")
-		local att_r = reye:LookupAttachment("eyeglow_R")
-		
-		if cv_singleye:GetBool() then
-			att_r = reye:LookupAttachment("eyeglow_C")
-		end
-		
-		if IsValid(pcf_l) or IsValid(pcf_r) or IsValid(pcf2_l) or IsValid(pcf2_r) then leye:StopParticleEmission() reye:StopParticleEmission() end
-		
-		local pcf_l = CreateParticleSystem(leye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, att_l, leye:GetPos())
-		local pcf2_l = CreateParticleSystem(leye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, att_l, leye:GetPos())
-		local pcf_r = CreateParticleSystem(reye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, att_r, reye:GetPos())
-		local pcf2_r = CreateParticleSystem(reye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, att_r, reye:GetPos())
-		if eye_color1[color] == nil then return end
-		if eye_color2[color] == nil then return end
-		
-		if streak >= 5 and streak <= 9 then
-			if IsValid(pcf2_l) then leye:StopParticleEmission() end
-			if IsValid(pcf2_r) then reye:StopParticleEmission() end
-			
-			if pcf_l:IsValid() then
-				pcf_l:SetControlPoint(9,eye_color1[color])
-				if not cv_singleye:GetBool() then
-					pcf_l:StartEmission()
-				end
-			end
-			if pcf_r:IsValid() then
-				pcf_r:SetControlPoint(9,eye_color1[color])
-				pcf_r:StartEmission()
-			end
-		elseif streak >= 10 then
-			leye:StopParticleEmission()
-			reye:StopParticleEmission()
-			if IsValid(pcf_l) then leye:StopParticleEmission() end
-			if IsValid(pcf_r) then reye:StopParticleEmission() end
-			
-			if pcf2_l:IsValid() then
-				pcf2_l:SetControlPoint(9,eye_color2[color])
-				if not cv_singleye:GetBool() then
-					pcf2_l:StartEmission()
-				end
-			end
-				
-			if pcf2_r:IsValid() then
-				pcf2_r:SetControlPoint(9,eye_color2[color])
-				pcf2_r:StartEmission()
-			end
-		end
+	local att_l = leye:LookupAttachment("eyeglow_L")
+	local att_r = reye:LookupAttachment("eyeglow_R")
+	if cv_singleye:GetBool() then
+		att_r = reye:LookupAttachment("eyeglow_C")
 	end
-			
-	ply:SetNW2Bool("killstreak_effects_created",true)
+	
+	if streak >= 5 and streak <= 9 then
+		if not IsValid(pcf_l) and not cv_singleye:GetBool() then 
+			pcf_l = CreateParticleSystem(leye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, att_l, leye:GetPos())
+			pcf_l:SetControlPoint(9,eye_color1[color])
+			pcf_l:StartEmission()
+		end
+		
+		if not IsValid(pcf_r) then
+			pcf_r = CreateParticleSystem(reye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, att_r, reye:GetPos())
+			pcf_r:SetControlPoint(9,eye_color1[color])
+			pcf_r:StartEmission()
+		end
+		
+		if IsValid(pcf_l) and cv_singleye:GetBool() then
+			pcf_l:StopEmission()
+		end
+		
+	elseif streak >= 10 then
+		if IsValid(pcf_l) then
+			pcf_l:StopEmission()
+		end
+		
+		if IsValid(pcf_r) then
+			pcf_r:StopEmission()
+		end
+		
+		if not IsValid(pcf2_l) and not cv_singleye:GetBool() then 
+			pcf2_l = CreateParticleSystem(leye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, att_l, leye:GetPos())
+			pcf2_l:SetControlPoint(9,eye_color2[color])
+			pcf2_l:StartEmission()
+		end
+		
+		if not IsValid(pcf2_r) then
+			pcf2_r = CreateParticleSystem(reye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, att_r, reye:GetPos())
+			pcf2_r:SetControlPoint(9,eye_color2[color])
+			pcf2_r:StartEmission()
+		end
+		
+		if IsValid(pcf2_l) and cv_singleye:GetBool() then
+			pcf_l:StopEmission()
+		end
+	else
+		if IsValid(pcf_l) or cv_singleye:GetBool() then
+			pcf_l:StopEmission()
+		end
+		
+		if IsValid(pcf_r) then
+			pcf_r:StopEmission()
+		end		
+		
+		if IsValid(pcf2_l) or cv_singleye:GetBool() then
+			pcf2_l:StopEmission()
+		end
+		
+		if IsValid(pcf2_r) then
+			pcf2_r:StopEmission()
+		end		
+	end
 end
 hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply",DrawKillstreakParticles)
 

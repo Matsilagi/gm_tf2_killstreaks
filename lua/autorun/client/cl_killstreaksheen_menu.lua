@@ -91,10 +91,16 @@ local function sheenControl(panel)
 	panel:AddControl("Label", {
 		Text = "Disables the Left eye and centers the beam emission (for single-eyed models)."
 	})
+	
+	panel:AddControl("Label", {Text = ""}) -- spacer
 
 	panel:AddControl("Button", {
 		Label = "Apply Killstreak Changes",
 		Command = "killstreak_applycolor"
+	})
+	
+	panel:AddControl("Label", {
+		Text = "Effects will change on next respawn."
 	})
 
 	panel:AddControl("Label", {Text = ""}) -- spacer
