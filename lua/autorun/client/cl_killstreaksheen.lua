@@ -109,6 +109,7 @@ local function DrawKillstreakParticles(ply)
 	if eye_color2[color] == nil then leye:StopParticleEmission() reye:StopParticleEmission() return end
 	if not attach_id or attach_id == nil then leye:StopParticleEmission() reye:StopParticleEmission() return end
 	if not attach or attach == nil then leye:StopParticleEmission() reye:StopParticleEmission() return end
+	if cv_singleye:GetBool() then leye:StopParticleEmission() end
 	
 	--CREATION: MODELS
 	

@@ -91,7 +91,7 @@ local function sheenControl(panel)
 	})
 	
 	panel:AddControl("Label", {
-		Text = "Disables the Left eye and centers the beam emission (for single-eyed models)."
+		Text = "Disables the Left eye and centers the beam emission for use in single-eyed models.\n(Click 'Apply Killstreak Changes' after changing this to center the particles)"
 	})
 	
 	panel:AddControl("Label", {Text = ""}) -- spacer
