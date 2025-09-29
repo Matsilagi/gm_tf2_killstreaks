@@ -387,3 +387,79 @@ if file.Exists("weapons/cw_base/shared.lua", "LUA") then
 
 	hook.Add("InitPostEntity", "ffgs_utils_killstreak_patch_cw20", PatchCW20Draw)
 end
+
+--MWBase Compat
+if file.Exists("weapons/mg_base/shared.lua", "LUA") then
+	local shoulddraw = true
+
+	local function DrawSheenMW(self, flags)
+		if not shoulddraw then return end
+
+		local wep = self:GetOwner()
+		if not IsValid(wep) then return end
+
+		local owner = wep:GetOwner()
+		if not IsValid(owner) then return end
+
+		local streak = math.Clamp(owner:GetNW2Int("killstreak", 0), 0, maxstreak)
+		local color = owner:GetNW2String("killstreakcolor", nil)
+
+		if WeaponSheenColors[color] and streak > 0 and streak >= minstreak then
+			render.MaterialOverride(glow)
+
+			self.KSSheenPlayer = owner
+			self:DrawModel(flags)
+
+			local atts = wep:GetAllAttachmentsInUse()
+			for slot = #atts, 1, -1 do
+				local att = atts[slot]
+
+				if not IsValid(att.m_Model) then continue end
+
+				if att.hideModel then
+					render.SetStencilWriteMask(0xFF)
+					render.SetStencilTestMask(0xFF)
+					render.SetStencilReferenceValue(0)
+					render.SetStencilPassOperation(STENCIL_KEEP)
+					render.SetStencilZFailOperation(STENCIL_KEEP)
+					render.ClearStencil()
+					render.SetStencilEnable(true)
+					render.SetStencilReferenceValue(MWBASE_STENCIL_REFVALUE + 2)
+					render.SetStencilCompareFunction(STENCIL_NEVER)
+					render.SetStencilFailOperation(STENCIL_REPLACE)
+
+					att.hideModel:DrawModel(flags)
+
+					render.SetStencilCompareFunction(STENCIL_NOTEQUAL)
+					render.SetStencilFailOperation(STENCIL_KEEP)
+				end
+
+				att.m_Model:DrawModel(flags)
+
+				if att.hideModel then
+					render.SetStencilEnable(false)
+					render.ClearStencil()
+				end
+			end
+
+			render.MaterialOverride(nil)
+		end
+	end
+
+	local cv_shoulddraw = CreateClientConVar("cl_killstreak_mgbase_draw", "1", true, false)
+	local function UpdateCVars()
+		shoulddraw = cv_shoulddraw:GetBool()
+	end
+	cvars.RemoveChangeCallback(cv_shoulddraw:GetName(), cv_shoulddraw:GetName())
+	cvars.AddChangeCallback(cv_shoulddraw:GetName(), UpdateCVars, cv_shoulddraw:GetName())
+
+	hook.Add("PreRegisterSENT", "patch_mg_viewmodel", function(ENT, ClassName)
+		if ClassName ~= "mg_viewmodel" then return end
+
+		local Draw = ENT.Draw
+		ENT.Draw = function(self, flags, ...)
+			Draw(self, flags, ...)
+			DrawSheenMW(self, flags)
+		end
+	end)
+end
