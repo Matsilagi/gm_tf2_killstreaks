@@ -395,6 +395,7 @@ end)
 hook.Add("PostDrawViewModel", "ffgs_utils_killstreak_fp", function(vm, ply, wep)
 	if wep.VMRedraw then return end
 	if wep and (wep.CW20Weapon or wep.IsFAS2Weapon) then return end -- Handled separately
+	if wep and (wep.ArcCW or wep.ARC9 or wep.ArcticTacRP) then return end --No compatibility ):
 	wep.VMRedraw = true
 	DrawKillstreakSheen(vm, ply)
 	wep.VMRedraw = false
