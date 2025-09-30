@@ -299,7 +299,7 @@ do -- matproxy
 	local baseFramerate = 25 -- default to 25 per the vmt; i leave this to you to change/manipulate
 	-- you can also change this to be based on a value from the player inside of the matproxy's bind func
 
-	local MAX_KILLS = 20
+	local MAX_KILLS = 10
 	local MAX_SHEEN_WAIT = 5
 	local function GetTimeBetweenAnims(streak)
 		-- set the time between sheens based on kill streak
