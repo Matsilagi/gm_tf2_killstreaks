@@ -63,9 +63,9 @@ hook.Add("OnNPCKilled", "ffgs_utils_killstreak_npcdeath", function(npc, attacker
 end)
 
 hook.Add("PlayerSpawn", "ffgs_utils_killstreak_clear", function(ply)
-	if ply:IsBot() then return end
-
 	ply:SetNW2Int("killstreak", 0)
+
+	if ply:IsBot() then return end
 	ply:SetNW2String("killstreakcolor", ply:GetInfo("cl_killstreak_color"))
 	ply:SetNW2Int("killstreakeffect", tonumber(ply:GetInfo("cl_killstreak_effect")) or 0)
 	ply:SetNW2Bool("killstreak_single_eye", tobool(ply:GetInfo("cl_killstreak_eyepatch")))
