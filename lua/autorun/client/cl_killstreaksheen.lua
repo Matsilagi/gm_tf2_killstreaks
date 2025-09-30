@@ -299,7 +299,7 @@ do -- matproxy
 	local baseFramerate = 25 -- default to 25 per the vmt; i leave this to you to change/manipulate
 	-- you can also change this to be based on a value from the player inside of the matproxy's bind func
 
-	local MAX_KILLS = 5
+	local MAX_KILLS = 20
 	local MAX_SHEEN_WAIT = 5
 	local function GetTimeBetweenAnims(streak)
 		-- set the time between sheens based on kill streak
@@ -335,7 +335,7 @@ do -- matproxy
 			if not _ent then return end
 
 			local streak = math.min(E_GetNW2Int(_ent, "killstreak", 0), maxstreak)
-			if streak == 0 --[[or streak < minstreak]] then return end
+			if streak < minstreak --[[or streak == 0]] then return end
 
 			local colorvar = P_IsBot(_ent) and "team_blue" or E_GetNW2String(_ent, "killstreakcolor", nil)
 			if not WeaponSheenColors[colorvar] then return end
@@ -378,7 +378,7 @@ local function DrawKillstreakSheen(ent, owner, override)
 	local streak = math.Clamp(owner:GetNW2Int("killstreak", 0), 0, maxstreak)
 	local color = owner:IsBot() and "team_blue" or owner:GetNW2String("killstreakcolor", nil)
 
-	if WeaponSheenColors[color] and streak > 0 and streak >= minstreak then
+	if WeaponSheenColors[color] and streak >= minstreak then
 		render.MaterialOverride(glow)
 		ent:DrawModel()
 		render.MaterialOverride(nil)
@@ -470,7 +470,7 @@ if file.Exists("weapons/cw_base/shared.lua", "LUA") then
 			local streak = math.Clamp(owner:GetNW2Int("killstreak", 0), 0, maxstreak)
 			local color = owner:GetNW2String("killstreakcolor", nil)
 
-			if IsValid(_self.CW_VM) and WeaponSheenColors[color] and streak > 0 and streak >= minstreak then
+			if IsValid(_self.CW_VM) and WeaponSheenColors[color] and streak >= minstreak then
 				render.MaterialOverride(glow)
 
 				if _self.ViewModelFlip then render.CullMode(MATERIAL_CULLMODE_CW) end
@@ -512,7 +512,7 @@ if file.Exists("weapons/mg_base/shared.lua", "LUA") then
 		local streak = math.Clamp(owner:GetNW2Int("killstreak", 0), 0, maxstreak)
 		local color = owner:GetNW2String("killstreakcolor", nil)
 
-		if WeaponSheenColors[color] and streak > 0 and streak >= minstreak then
+		if WeaponSheenColors[color] and streak >= minstreak then
 			render.MaterialOverride(glow)
 
 			self.KSSheenPlayer = owner
