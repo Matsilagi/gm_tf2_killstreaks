@@ -2,14 +2,14 @@
 -- Created by YuRaNnNzZZ
 -- Additional code changes by Matsilagi
 
---CONVARS CREATION
-local cv_color = CreateClientConVar("cl_killstreak_color", "team_red", true, true)
-local cv_effect = CreateClientConVar("cl_killstreak_effect", "killstreak_t1_",true, true)
-local cv_debugmodel = CreateClientConVar("cl_killstreak_eyeparticle_debug","0",true,false)
-local cv_singleye = CreateClientConVar("cl_killstreak_eyepatch","0",true,false)
-
 --HUD ELEMENTS / DRAWS
 if CLIENT then
+	--CONVARS CREATION
+	CreateClientConVar("cl_killstreak_color", "team_red", true, true)
+	CreateClientConVar("cl_killstreak_effect", "1",true, true)
+	CreateClientConVar("cl_killstreak_eyeparticle_debug","0",true,false)
+	CreateClientConVar("cl_killstreak_eyepatch","0",true,true)
+
 	local cv_draw = CreateClientConVar("cl_killstreak_hud", "1", true, false)
 	local cv_drawhud = GetConVar("cl_drawhud")
 
@@ -29,7 +29,7 @@ if CLIENT then
 	end
 	updateFont()
 
-	cvars.AddChangeCallback(cv_forcetf2font:GetName(), updateFont, cv_forcetf2font:GetName())
+	cvars.AddChangeCallback("cl_killstreak_forcetf2font", updateFont, "cl_killstreak_forcetf2font")
 
 	hook.Add("HUDPaint", "ffgs_utils_killstreak_draw", function()
 		if not cv_drawhud:GetBool() or not cv_draw:GetBool() then return end
@@ -50,7 +50,6 @@ hook.Add("PlayerDeath", "ffgs_utils_killstreak_playerdeath", function(victim, in
 	if not victim:IsValid() or not victim:IsPlayer() or not attacker:IsValid() or not attacker:IsPlayer() then return end
 
 	victim:SetNW2String("killstreakcolor", nil)
-	victim:SetNW2Bool("killstreak_effects_created",false)
 	if victim == attacker then return end
 	local atkstreak = attacker:GetNW2Int("killstreak", 0) + 1
 	attacker:SetNW2Int("killstreak", atkstreak)
@@ -64,16 +63,28 @@ hook.Add("OnNPCKilled", "ffgs_utils_killstreak_npcdeath", function(npc, attacker
 end)
 
 hook.Add("PlayerSpawn", "ffgs_utils_killstreak_clear", function(ply)
+	if ply:IsBot() then return end
+
 	ply:SetNW2Int("killstreak", 0)
-	ply:SetNW2Bool("killstreak_effects_created",false)
-	ply:SetNW2String("killstreakcolor", ply:GetInfo(cv_color:GetName()))
-	ply:SetNW2String("killstreakeffect",ply:GetInfo(cv_effect:GetName()))
+	ply:SetNW2String("killstreakcolor", ply:GetInfo("cl_killstreak_color"))
+	ply:SetNW2Int("killstreakeffect", tonumber(ply:GetInfo("cl_killstreak_effect")) or 0)
+	ply:SetNW2Bool("killstreak_single_eye", tobool(ply:GetInfo("cl_killstreak_eyepatch")))
+
+	local offsetLX, offsetLY, offsetLZ = ply:GetInfo("cl_killstreak_offset_l_right"), ply:GetInfo("cl_killstreak_offset_l_forward", ply:GetInfo("cl_killstreak_offset_l_up"))
+	local offsetRX, offsetRY, offsetRZ = ply:GetInfo("cl_killstreak_offset_r_right"), ply:GetInfo("cl_killstreak_offset_r_forward", ply:GetInfo("cl_killstreak_offset_r_up"))
+	ply:SetNW2Vector("killstreak_eye_pos_l", Vector(offsetLX, offsetLY, offsetLZ))
+	ply:SetNW2Vector("killstreak_eye_pos_r", Vector(offsetRX, offsetRY, offsetRZ))
 end)
 
 --APPLY CHANGES CONCOMMAND
 concommand.Add("killstreak_applycolor", function(ply, cmd, args)
 	if not ply or not ply:IsValid() then return end
-	ply:SetNW2String("killstreakcolor", ply:GetInfo(cv_color:GetName()))
-	ply:SetNW2String("killstreakeffect",ply:GetInfo(cv_effect:GetName()))
-	ply:SetNW2Bool("killstreak_effects_created",false)
+	ply:SetNW2String("killstreakcolor", ply:GetInfo("cl_killstreak_color"))
+	ply:SetNW2Int("killstreakeffect", tonumber(ply:GetInfo("cl_killstreak_effect")) or 0)
+	ply:SetNW2Bool("killstreak_single_eye", tobool(ply:GetInfo("cl_killstreak_eyepatch")))
+
+	local offsetLX, offsetLY, offsetLZ = ply:GetInfo("cl_killstreak_offset_l_right"), ply:GetInfo("cl_killstreak_offset_l_forward", ply:GetInfo("cl_killstreak_offset_l_up"))
+	local offsetRX, offsetRY, offsetRZ = ply:GetInfo("cl_killstreak_offset_r_right"), ply:GetInfo("cl_killstreak_offset_r_forward", ply:GetInfo("cl_killstreak_offset_r_up"))
+	ply:SetNW2Vector("killstreak_eye_pos_l", Vector(offsetLX, offsetLY, offsetLZ))
+	ply:SetNW2Vector("killstreak_eye_pos_r", Vector(offsetRX, offsetRY, offsetRZ))
 end)
