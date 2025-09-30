@@ -130,7 +130,11 @@ local function sheenControl(panel)
 	})
 
 	panel:AddControl("Label", {
-		Text = "Enable this to position one (or both) eyes."
+		Text = "Draws helper models where the particles are and enables visualization in real-time."
+	})
+	
+	panel:AddControl("Label", {
+		Text = "This will break how you see others' particles, just disable it and apply to fix."
 	})
 end
 

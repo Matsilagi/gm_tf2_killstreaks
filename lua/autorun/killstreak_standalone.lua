@@ -58,12 +58,18 @@ end)
 hook.Add("OnNPCKilled", "ffgs_utils_killstreak_npcdeath", function(npc, attacker, inflictor)
 	if not npc:IsValid() or not attacker:IsValid() or not attacker:IsPlayer() then return end
 
-	local atkstreak = attacker:GetNW2Int("killstreak", 0) + 1
-	attacker:SetNW2Int("killstreak", atkstreak)
+	local npcKills = attacker:GetNW2Int("npc_kills", 0) + 1
+	attacker:SetNW2Int("npc_kills", npcKills)
+	
+	if npcKills % 20 == 0 then -- Only increment killstreak every 20 NPC/Nextbot kills
+		local atkstreak = attacker:GetNW2Int("killstreak", 0) + 1
+		attacker:SetNW2Int("killstreak", atkstreak)
+	end
 end)
 
 hook.Add("PlayerSpawn", "ffgs_utils_killstreak_clear", function(ply)
 	ply:SetNW2Int("killstreak", 0)
+	ply:SetNW2Int("npc_kills", 0)
 
 	if ply:IsBot() then return end
 	ply:SetNW2String("killstreakcolor", ply:GetInfo("cl_killstreak_color"))

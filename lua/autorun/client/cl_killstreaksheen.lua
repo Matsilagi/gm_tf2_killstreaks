@@ -97,6 +97,10 @@ hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply", function(ply)
 	local attach = attach_id > 0 and ply:GetAttachment(attach_id)
 
 	local bSingleEye = ply:GetNW2Bool("killstreak_single_eye", false)
+	
+	if game.SinglePlayer() or cv_debugmodel:GetBool() then
+		bSingleEye = ply == LocalPlayer() and GetConVar("cl_killstreak_eyepatch"):GetBool()
+	end
 
 	--INITIAL CHECKS AND EFFECT CONTROL
 	if streak < 5 or ply:GetNoDraw() or not ply:Alive() or not attach or
@@ -121,6 +125,14 @@ hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply", function(ply)
 	local up = attach.Ang:Up()
 
 	local offsetL = ply:GetNW2Vector("killstreak_eye_pos_l", Vector(-1.5,1,0))
+	
+	if game.SinglePlayer() or cv_debugmodel:GetBool() then
+		local offL_dbg_r = LocalPlayer() and GetConVar("cl_killstreak_offset_l_right"):GetFloat()
+		local offL_dbg_u = LocalPlayer() and GetConVar("cl_killstreak_offset_l_up"):GetFloat()
+		local offL_dbg_f = LocalPlayer() and GetConVar("cl_killstreak_offset_l_forward"):GetFloat()
+		offsetL = Vector(offL_dbg_r, offL_dbg_u, offL_dbg_f)
+	end
+	
 	leftEyePos:Add(right * offsetL.x)
 	leftEyePos:Add(forward * offsetL.y)
 	leftEyePos:Add(up * offsetL.z)
@@ -132,6 +144,14 @@ hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply", function(ply)
 	local rightEyePos = attach.Pos * 1
 
 	local offsetR = ply:GetNW2Vector("killstreak_eye_pos_r", Vector(1.5,1,0))
+	
+	if game.SinglePlayer() or cv_debugmodel:GetBool() then
+		local offR_dbg_r = LocalPlayer() and GetConVar("cl_killstreak_offset_r_right"):GetFloat()
+		local offR_dbg_u = LocalPlayer() and GetConVar("cl_killstreak_offset_r_up"):GetFloat()
+		local offR_dbg_f = LocalPlayer() and GetConVar("cl_killstreak_offset_r_forward"):GetFloat()
+		offsetR = Vector(offR_dbg_r, offR_dbg_u, offR_dbg_f)
+	end
+	
 	rightEyePos:Add(right * offsetR.x)
 	rightEyePos:Add(forward * offsetR.y)
 	rightEyePos:Add(up * offsetR.z)
