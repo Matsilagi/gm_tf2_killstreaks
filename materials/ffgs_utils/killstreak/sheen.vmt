@@ -12,15 +12,18 @@
 
 	"Proxies"
 	{
-		"AnimatedTexture"
-		{
-			"animatedtexturevar" "$envmapmask"
-			"animatedtextureframenumvar" "$envmapmaskframe"
-			"animatedtextureframerate" "25"
-		}
+		//"AnimatedTexture"
+		//{
+		//	"animatedtexturevar" "$envmapmask"
+		//	"animatedtextureframenumvar" "$envmapmaskframe"
+		//	"animatedtextureframerate" "25"
+		//}
 		"KillStreakGlowColor"
 		{
 			"resultVar" "$envmaptint"
+			"animatedtexturevar" "$envmapmask"
+			"animatedtextureframenumvar" "$envmapmaskframe"
+			//"animatedtextureframerate" "25"
 		}
 	}
 }

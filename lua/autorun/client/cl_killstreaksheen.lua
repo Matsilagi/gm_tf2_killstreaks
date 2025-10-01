@@ -1,21 +1,21 @@
 -- TF2 Killstreak Weapon Sheen
 -- Created by YuRaNnNzZZ
 -- Colors and Eye Particles Code by Matsilagi
+-- cleanup & multiplayer fixing by homonovus
 
 --CONVARS SETUP
 local cv_matmode = CreateClientConVar("cl_killstreak_oldmat", "0", true, false)
-local cv_effect = GetConVar("cl_killstreak_effect")
-local cv_color = GetConVar("cl_killstreak_color")
 local cv_specular = GetConVar("mat_specular")
 local cv_debugmodel = GetConVar("cl_killstreak_eyeparticle_debug")
-local cv_singleye = GetConVar("cl_killstreak_eyepatch")
+
+CreateClientConVar("cl_killstreak_offset_l_right", "-1.50", true, true)
+CreateClientConVar("cl_killstreak_offset_l_up", "0.0", true, true)
+CreateClientConVar("cl_killstreak_offset_l_forward", "1.0", true, true)
+CreateClientConVar("cl_killstreak_offset_r_right", "1.50", true, true)
+CreateClientConVar("cl_killstreak_offset_r_up", "0.0", true, true)
+CreateClientConVar("cl_killstreak_offset_r_forward", "1.0", true, true)
+
 local glow = Material("ffgs_utils/killstreak/sheen")
-local offset_l_right = CreateClientConVar("cl_killstreak_offset_l_right", "-1.50", true, true)
-local offset_l_up = CreateClientConVar("cl_killstreak_offset_l_up", "0.0", true, true)
-local offset_l_forward = CreateClientConVar("cl_killstreak_offset_l_forward", "1.0", true, true)
-local offset_r_right = CreateClientConVar("cl_killstreak_offset_r_right", "1.50", true, true)
-local offset_r_up = CreateClientConVar("cl_killstreak_offset_r_up", "0.0", true, true)
-local offset_r_forward = CreateClientConVar("cl_killstreak_offset_r_forward", "1.0", true, true)
 
 --MATERIAL CHECK
 local function checkMaterial()
@@ -30,268 +30,376 @@ cvars.AddChangeCallback(cv_specular:GetName(), checkMaterial, cv_matmode:GetName
 --COLOR TABLE AND STREAK VALUES
 local minstreak, maxstreak = 0, 20
 
-local colors = {
-	["team_red"]		= Vector(200/255, 20/255,  15/255), -- Team Shine RED
-	["team_blue"]		= Vector(40/255, 98/255, 200/255), -- Team Shine BLU
-	["yellow"]			= Vector(242/255, 172/255, 10/255), -- Deadly Daffodil
-	["orange"]			= Vector(255/255, 75/255,  5/255), -- Manndarin
-	["green"]			= Vector(100/255, 255/255, 10/255), -- Mean Green
-	["ltgreen"]			= Vector(40/255, 255/255, 70/255), -- Agonizing Emerald
-	["violet"]			= Vector(105/255, 20/255,  255/255), -- Villainous Violet
-	["pink"]			= Vector(255/255, 30/255,  255/255), -- Hot Rod
+local WeaponSheenColors = {
+	["team_red"]		= Color(200, 20,  15), -- Team Shine RED
+	["team_blue"]		= Color(40, 98, 200), -- Team Shine BLU
+	["yellow"]			= Color(242, 172, 10), -- Deadly Daffodil
+	["orange"]			= Color(255, 75,  5), -- Manndarin
+	["green"]			= Color(100, 255, 10), -- Mean Green
+	["ltgreen"]			= Color(40, 255, 70), -- Agonizing Emerald
+	["violet"]			= Color(105, 20,  255), -- Villainous Violet
+	["pink"]			= Color(255, 30,  255), -- Hot Rod
 }
 
-local eye_color1 = {
-	["team_red"]		= Vector(255/255, 118/255, 118/255), -- Team Shine RED
-	["team_blue"]		= Vector(0, 92/255, 255/255), -- Team Shine BLU
-	["yellow"]			= Vector(255/255, 237/255, 138/255), -- Deadly Daffodil
-	["orange"]			= Vector(255/255, 111/255, 5/255), -- Manndarin
-	["green"]			= Vector(230/255, 255/255, 60/255), -- Mean Green
-	["ltgreen"]			= Vector(103/255, 255/255, 121/255), -- Agonizing Emerald
-	["violet"]			= Vector(105/255, 20/255,  255/255), -- Villainous Violet
-	["pink"]			= Vector(255/255, 120/255, 255/255), -- Hot Rod
+local ColorsLevel1 = {
+	["team_red"]		= Color(255, 118, 118), -- Team Shine RED
+	["team_blue"]		= Color(0, 92, 255), -- Team Shine BLU
+	["yellow"]			= Color(255, 237, 138), -- Deadly Daffodil
+	["orange"]			= Color(255, 111, 5), -- Manndarin
+	["green"]			= Color(230, 255, 60), -- Mean Green
+	["ltgreen"]			= Color(103, 255, 121), -- Agonizing Emerald
+	["violet"]			= Color(105, 20,  255), -- Villainous Violet
+	["pink"]			= Color(255, 120, 255), -- Hot Rod
 }
 
-local eye_color2 = {
-	["team_red"]		= Vector(255/255, 35/255,  28/255), -- Team Shine RED
-	["team_blue"]		= Vector(134/255, 203/255, 243/255), -- Team Shine BLU
-	["yellow"]			= Vector(255/255, 213/255, 65/255), -- Deadly Daffodil
-	["orange"]			= Vector(255/255, 137/255, 31/255), -- Manndarin
-	["green"]			= Vector(193/255, 255/255, 61/255), -- Mean Green
-	["ltgreen"]			= Vector(165/255, 255/255, 193/255), -- Agonizing Emerald
-	["violet"]			= Vector(185/255, 145/255, 255/255), -- Villainous Violet
-	["pink"]			= Vector(255/255, 176/255, 217/255), -- Hot Rod
-}
-
-local effects = {
-	["killstreak_t1_"] = "Fire Horns",
-	["killstreak_t2_"] = "Cerebral Discharge",
-	["killstreak_t3_"] = "Tornado",
-	["killstreak_t4_"] = "Flames",
-	["killstreak_t5_"] = "Singularity",
-	["killstreak_t6_"] = "Incinerator",
-	["killstreak_t7_"] = "Hypno-Beam"
+local ColorsLevel2 = {
+	["team_red"]		= Color(255, 35,  28), -- Team Shine RED
+	["team_blue"]		= Color(134, 203, 243), -- Team Shine BLU
+	["yellow"]			= Color(255, 213, 65), -- Deadly Daffodil
+	["orange"]			= Color(255, 137, 31), -- Manndarin
+	["green"]			= Color(193, 255, 61), -- Mean Green
+	["ltgreen"]			= Color(165, 255, 193), -- Agonizing Emerald
+	["violet"]			= Color(185, 145, 255), -- Villainous Violet
+	["pink"]			= Color(255, 176, 217), -- Hot Rod
 }
 
 --EYE KILLSTREAKS / PARTICLE EFFECTS
-local leye = ClientsideModel( "models/dummy.mdl" )
-leye:SetNoDraw( true )
+hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply", function(ply)
+	local plyTable = ply:GetTable()
 
-local reye = ClientsideModel( "models/dummy.mdl" )
-reye:SetNoDraw( true )
-
-local function DrawKillstreakParticles(ply)
 	--SETUP
-	local streak = math.Clamp(ply:GetNW2Int("killstreak", 0), 0, maxstreak)
-	local color = ply:GetNW2String("killstreakcolor", nil)
-	local effect_name = ply:GetNW2String("killstreakeffect",nil)
-	local cv_offset_leye_right = GetConVar("cl_killstreak_offset_l_right")
-	local cv_offset_leye_up = GetConVar("cl_killstreak_offset_l_up")
-	local cv_offset_leye_forward = GetConVar("cl_killstreak_offset_l_forward")
-	local offset_leye_right = cv_offset_leye_right:GetFloat()
-	local offset_leye_up = cv_offset_leye_up:GetFloat()
-	local offset_leye_forward = cv_offset_leye_forward:GetFloat()
-	local cv_offset_reye_right = GetConVar("cl_killstreak_offset_r_right")
-	local cv_offset_reye_up = GetConVar("cl_killstreak_offset_r_up")
-	local cv_offset_reye_forward = GetConVar("cl_killstreak_offset_r_forward")
-	local offset_reye_right = cv_offset_reye_right:GetFloat()
-	local offset_reye_up = cv_offset_reye_up:GetFloat()
-	local offset_reye_forward = cv_offset_reye_forward:GetFloat()
-	local attach_id = ply:LookupAttachment('eyes')
-	local attach = ply:GetAttachment(attach_id)
-	
-	--INITIAL CHECKS AND EFFECT CONTROL
-	if not IsValid(ply) or ply:GetNoDraw() then leye:StopParticleEmission() reye:StopParticleEmission() return end
-	if not ply:Alive() then leye:StopParticleEmission() reye:StopParticleEmission() return end
-	if color == nil or color == "none" then leye:StopParticleEmission() reye:StopParticleEmission() return end
-	if effect_name == nil or effect_name == "none" then leye:StopParticleEmission() reye:StopParticleEmission() return end
-	if eye_color1[color] == nil then leye:StopParticleEmission() reye:StopParticleEmission() return end
-	if eye_color2[color] == nil then leye:StopParticleEmission() reye:StopParticleEmission() return end
-	if not attach_id or attach_id == nil then leye:StopParticleEmission() reye:StopParticleEmission() return end
-	if not attach or attach == nil then leye:StopParticleEmission() reye:StopParticleEmission() return end
-	if cv_singleye:GetBool() then leye:StopParticleEmission() end
-	
+	local leye = plyTable._TFKillstreakLEyeModel
+	local reye = plyTable._TFKillstreakREyeModel
+
 	--CREATION: MODELS
-	
-	--Left Eye
-	local attpos = attach.Pos
-	local attang = attach.Ang
-	attpos = attpos + (attang:Forward() * offset_leye_forward)
-	attpos = attpos + (attang:Right() * offset_leye_right)
-	attpos = attpos + (attang:Up() * offset_leye_up)
-	leye:SetModelScale(0.08, 0)
-	leye:SetPos(attpos)
-	leye:SetAngles(attang)
-	leye:SetRenderOrigin(attpos)
-	leye:SetRenderAngles(attang)
-	leye:SetupBones()
-	if cv_debugmodel:GetBool() and not cv_singleye:GetBool() then
-		leye:DrawModel()
-	else
+	if not (leye and leye:IsValid()) then
+		leye = ClientsideModel("models/dummy.mdl")
+		leye:SetParent(ply)
 		leye:SetNoDraw(true)
+		leye:SetModelScale(0.08, 0)
+		plyTable._TFKillstreakLEyeModel = leye
 	end
-	leye:SetRenderOrigin()
-	leye:SetRenderAngles()
+
+	if not (reye and reye:IsValid()) then
+		reye = ClientsideModel("models/dummy.mdl")
+		reye:SetParent(ply)
+		reye:SetNoDraw(true)
+		reye:SetModelScale(0.08, 0)
+		plyTable._TFKillstreakREyeModel = reye
+	end
+
+	local streak = math.Clamp(ply:GetNW2Int("killstreak", 0), 0, maxstreak)
+	local color = ply:IsBot() and "team_blue" or ply:GetNW2String("killstreakcolor", "")
+	local effect_id = ply:IsBot() and 1 or ply:GetNW2Int("killstreakeffect", 0)
+	local effect_name = string.format("killstreak_t%d_lvl%d", effect_id, streak >= 10 and 2 or 1)
+
+	local attach_id = ply:LookupAttachment("eyes")
+	local attach = attach_id > 0 and ply:GetAttachment(attach_id)
+
+	local bSingleEye = ply:GetNW2Bool("killstreak_single_eye", false)
 	
+	if game.SinglePlayer() or cv_debugmodel:GetBool() then
+		bSingleEye = ply == LocalPlayer() and GetConVar("cl_killstreak_eyepatch"):GetBool()
+	end
+
+	--INITIAL CHECKS AND EFFECT CONTROL
+	if streak < 5 or ply:GetNoDraw() or not ply:Alive() or not attach or
+		(#color == 0 or color == "none") or (effect_id > 7 or effect_id <= 0) or
+		(not ColorsLevel1[color] or not ColorsLevel2[color])
+		then
+		leye:StopParticleEmission()
+		reye:StopParticleEmission()
+		return
+	end
+
+	if bSingleEye then
+		leye:StopParticleEmission()
+	end
+
+	--Left Eye
+	local leftEyePos = attach.Pos * 1
+	local attang = attach.Ang
+
+	local forward = attach.Ang:Forward()
+	local right = attach.Ang:Right()
+	local up = attach.Ang:Up()
+
+	local offsetL = ply:GetNW2Vector("killstreak_eye_pos_l", Vector(-1.5,1,0))
+	
+	if game.SinglePlayer() or cv_debugmodel:GetBool() then
+		local offL_dbg_r = LocalPlayer() and GetConVar("cl_killstreak_offset_l_right"):GetFloat()
+		local offL_dbg_u = LocalPlayer() and GetConVar("cl_killstreak_offset_l_up"):GetFloat()
+		local offL_dbg_f = LocalPlayer() and GetConVar("cl_killstreak_offset_l_forward"):GetFloat()
+		offsetL = Vector(offL_dbg_r, offL_dbg_u, offL_dbg_f)
+	end
+	
+	leftEyePos:Add(right * offsetL.x)
+	leftEyePos:Add(forward * offsetL.y)
+	leftEyePos:Add(up * offsetL.z)
+
+	leye:SetRenderOrigin(leftEyePos)
+	leye:SetRenderAngles(attang)
+
 	--Right Eye
-	local attpos2 = attach.Pos
-	local attang2 = attach.Ang
-	attpos2 = attpos2 + (attang2:Forward() * offset_reye_forward)
-	attpos2 = attpos2 + (attang2:Right() * offset_reye_right)
-	attpos2 = attpos2 + (attang2:Up() * offset_reye_up)
-	reye:SetModelScale(0.08, 0)
-	reye:SetPos(attpos2)
-	reye:SetAngles(attang2)
-	reye:SetRenderOrigin(attpos2)
-	reye:SetRenderAngles(attang2)
-	reye:SetupBones()
+	local rightEyePos = attach.Pos * 1
+
+	local offsetR = ply:GetNW2Vector("killstreak_eye_pos_r", Vector(1.5,1,0))
+	
+	if game.SinglePlayer() or cv_debugmodel:GetBool() then
+		local offR_dbg_r = LocalPlayer() and GetConVar("cl_killstreak_offset_r_right"):GetFloat()
+		local offR_dbg_u = LocalPlayer() and GetConVar("cl_killstreak_offset_r_up"):GetFloat()
+		local offR_dbg_f = LocalPlayer() and GetConVar("cl_killstreak_offset_r_forward"):GetFloat()
+		offsetR = Vector(offR_dbg_r, offR_dbg_u, offR_dbg_f)
+	end
+	
+	rightEyePos:Add(right * offsetR.x)
+	rightEyePos:Add(forward * offsetR.y)
+	rightEyePos:Add(up * offsetR.z)
+
+	reye:SetRenderOrigin(rightEyePos)
+	reye:SetRenderAngles(attang)
+
 	if cv_debugmodel:GetBool() then
+		if not bSingleEye then
+			leye:DrawModel()
+		end
 		reye:DrawModel()
 	else
+		leye:SetNoDraw(true)
 		reye:SetNoDraw(true)
 	end
-	reye:SetRenderOrigin()
-	reye:SetRenderAngles()
-	
+
 	local att_l = leye:LookupAttachment("eyeglow_L")
 	local att_r = reye:LookupAttachment("eyeglow_R")
-	if cv_singleye:GetBool() then
+	if bSingleEye then
 		att_r = reye:LookupAttachment("eyeglow_C")
 	end
-	
-	--CREATION AND CHECK: PARTICLE STREAKS
-	if streak >= 5 and streak <= 9 then
-		if not IsValid(pcf_l) and not cv_singleye:GetBool() then 
-			pcf_l = CreateParticleSystem(leye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, att_l, leye:GetPos())
-			pcf_l:SetControlPoint(9,eye_color1[color])
+
+	local pcf_l = plyTable._TFKillstreakLEyeParticle
+	local pcf_r = plyTable._TFKillstreakREyeParticle
+
+	-- stop particle if player has changed effect
+	if (plyTable._TFKillStreakParticleName ~= effect_name) then
+		if pcf_l and pcf_l:IsValid() then
+			pcf_l:StopEmission()
+		end
+
+		if pcf_r and pcf_r:IsValid() then
+			pcf_r:StopEmission()
+		end
+	end
+
+	-- handle creation of particle effects
+
+	-- update color based on streak level
+	local colorTbl
+	if streak >= 5 and streak < 10 then
+		colorTbl = ColorsLevel1
+	elseif streak >= 10 then
+		colorTbl = ColorsLevel2
+	end
+
+	if not bSingleEye and not (pcf_l and pcf_l:IsValid()) then
+		pcf_l = CreateParticleSystem(leye, effect_name, PATTACH_POINT_FOLLOW, att_l, leftEyePos)
+		plyTable._TFKillstreakLEyeParticle = pcf_l
+
+		if pcf_l then
+			pcf_l:SetShouldDraw(false)
 			pcf_l:StartEmission()
 		end
-		
-		if not IsValid(pcf_r) then
-			pcf_r = CreateParticleSystem(reye, effect_name .. "lvl1", PATTACH_POINT_FOLLOW, att_r, reye:GetPos())
-			pcf_r:SetControlPoint(9,eye_color1[color])
+	elseif bSingleEye and (pcf_l and pcf_l:IsValid()) then
+		pcf_l:StopEmission()
+	end
+
+	if not (pcf_r and pcf_r:IsValid()) then
+		pcf_r = CreateParticleSystem(reye, effect_name, PATTACH_POINT_FOLLOW, att_r, rightEyePos)
+		plyTable._TFKillstreakREyeParticle = pcf_r
+		plyTable._TFKillStreakParticleName = effect_name
+		plyTable._TFKillStreakParticleColor = color
+
+		if pcf_r then
+			pcf_r:SetShouldDraw(false)
 			pcf_r:StartEmission()
 		end
-		
-		if IsValid(pcf_l) and cv_singleye:GetBool() then
-			pcf_l:StopEmission()
-		end
-	elseif streak >= 10 then
-		if IsValid(pcf_l) then
-			pcf_l:StopEmission()
-		end
-		
-		if IsValid(pcf_r) then
-			pcf_r:StopEmission()
-		end
-		
-		if not IsValid(pcf2_l) and not cv_singleye:GetBool() then 
-			pcf2_l = CreateParticleSystem(leye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, att_l, leye:GetPos())
-			pcf2_l:SetControlPoint(9,eye_color2[color])
-			pcf2_l:StartEmission()
-		end
-		
-		if not IsValid(pcf2_r) then
-			pcf2_r = CreateParticleSystem(reye, effect_name .. "lvl2", PATTACH_POINT_FOLLOW, att_r, reye:GetPos())
-			pcf2_r:SetControlPoint(9,eye_color2[color])
-			pcf2_r:StartEmission()
-		end
-		
-		if IsValid(pcf2_l) and cv_singleye:GetBool() then
-			pcf_l:StopEmission()
-		end
-	else
-		if IsValid(pcf_l) or cv_singleye:GetBool() then
-			pcf_l:StopEmission()
-		end
-		
-		if IsValid(pcf_r) then
-			pcf_r:StopEmission()
-		end		
-		
-		if IsValid(pcf2_l) or cv_singleye:GetBool() then
-			pcf2_l:StopEmission()
-		end
-		
-		if IsValid(pcf2_r) then
-			pcf2_r:StopEmission()
-		end		
 	end
-	
-	--ADDITIONAL CHECK: PARTICLE UPDATE
-	if cv_color:GetString() != ply:GetNW2String("killstreakcolor", nil) or cv_effect:GetString() != ply:GetNW2String("killstreakeffect", nil) then
-		if IsValid(pcf_l) then
+
+	local colorVec = colorTbl[color]:ToVector()
+	if pcf_l and pcf_l:IsValid() then
+		if streak == 0 then
 			pcf_l:StopEmission()
-		end
-		
-		if IsValid(pcf_r) then
-			pcf_r:StopEmission()
-		end		
-		
-		if IsValid(pcf2_l) or cv_singleye:GetBool() then
-			pcf2_l:StopEmission()
-		end
-		
-		if IsValid(pcf2_r) then
-			pcf2_r:StopEmission()
+		else
+			pcf_l:SetControlPointOrientation(0, forward, right, up)
+			pcf_l:SetControlPoint(9, colorVec)
 		end
 	end
-end
-hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply",DrawKillstreakParticles)
+	if pcf_r and pcf_r:IsValid() then
+		if streak == 0 then
+			pcf_r:StopEmission()
+		else
+			pcf_r:SetControlPointOrientation(0, forward, right, up)
+			pcf_r:SetControlPoint(9, colorVec)
+		end
+	end
+end)
+
+-- render manually to prevent drawing in first person for localplayer
+-- works in mirror on construct, as well as not having depth issues
+hook.Add("PostDrawTranslucentRenderables", "ffgs_utils_killstreak_ents", function()
+	for _, ply in player.Iterator() do
+		if not ply:IsValid() then continue end
+		if ply:GetNoDraw() or not ply:Alive() then continue end
+		if ply:IsDormant() then continue end
+
+		if ply == LocalPlayer() and not ply:ShouldDrawLocalPlayer() then continue end
+
+		local pcf_l = ply._TFKillstreakLEyeParticle
+		local pcf_r = ply._TFKillstreakREyeParticle
+		local pcf2_l = ply._TFKillstreakLEyeParticle2
+		local pcf2_r = ply._TFKillstreakREyeParticle2
+		if pcf_l and pcf_l:IsValid() then
+			pcf_l:Render()
+		end
+		if pcf_r and pcf_r:IsValid() then
+			pcf_r:Render()
+		end
+		if pcf2_l and pcf2_l:IsValid() then
+			pcf2_l:Render()
+		end
+		if pcf2_r and pcf2_r:IsValid() then
+			pcf2_r:Render()
+		end
+	end
+end)
 
 --WEAPON/VM AND WM SHEENS
-matproxy.Add({
-	name = "KillStreakGlowColor",
-	init = function(self, mat, values)
-		self.ResultTo = values.resultvar
-	end,
-	bind = function(self, mat, ent)
-		local _ent = ent
-		if ent and ent:IsValid() and ent:GetOwner() and ent:GetOwner():IsPlayer() then
-			_ent = ent:GetOwner()
-		end
-		if _ent and _ent:IsValid() and _ent:IsPlayer() then
-			local streak = math.min(_ent:GetNW2Int("killstreak", 0), maxstreak)
-			local colorvar = _ent:GetNW2String("killstreakcolor", nil)
-			local color = colors[colorvar]
-			local ratio = streak / maxstreak
+do -- matproxy
+	-- localize to boost performance inside of this hot area
+	-- matproxies' bind function is called multiple times per frame
+	-- typically only done for entities to avoid ENT.__index's perf hit :)
+	local MATERIAL = FindMetaTable("IMaterial")
+	local MAT_SetVector = MATERIAL.SetVector
+	local MAT_SetInt = MATERIAL.SetInt
+	local MAT_GetTexture = MATERIAL.GetTexture
 
-			if colors[colorvar] and streak > 0 and streak >= minstreak then
-				mat:SetVector(self.ResultTo, Vector(color.x * ratio, color.y * ratio, color.z * ratio))
-			end
-		end
+	local TEXTURE = FindMetaTable("ITexture")
+	local TEX_GetNumAnimationFrames = TEXTURE.GetNumAnimationFrames
+
+	local ENTITY = FindMetaTable("Entity")
+	local E_GetNW2Int = ENTITY.GetNW2Int
+	local E_GetNW2String = ENTITY.GetNW2String
+	local E_GetOwner = ENTITY.GetOwner
+	local E_IsValid = ENTITY.IsValid
+
+	local PLAYER = FindMetaTable("Player")
+	local P_IsBot = PLAYER.IsBot
+
+	local CurTime = CurTime
+	local FrameTime = FrameTime
+
+	local baseFramerate = 25 -- default to 25 per the vmt; i leave this to you to change/manipulate
+	-- you can also change this to be based on a value from the player inside of the matproxy's bind func
+
+	local MAX_KILLS = 10
+	local MAX_SHEEN_WAIT = 5
+	local function GetTimeBetweenAnims(streak)
+		-- set the time between sheens based on kill streak
+		if streak == 0 then return MAX_SHEEN_WAIT end
+		if streak >= MAX_KILLS then return 0 end
+
+		-- as player gets more kills, time decreases
+		return (1.0 - (streak / MAX_KILLS)) * MAX_SHEEN_WAIT
 	end
-})
+
+	matproxy.Add({
+		name = "KillStreakGlowColor",
+		init = function(self, mat, values)
+			self.ResultTo = values.resultvar
+			self.AnimatedTextureVar = values.animatedtexturevar
+			self.AnimatedTextureFrameVar = values.animatedtextureframenumvar
+		end,
+		bind = function(self, mat, ent)
+			local _ent
+
+			if ent and E_IsValid(ent) then
+				if ent:IsPlayer() then -- IsPlayer doesn't actually check anything
+					_ent = ent
+				else
+					local owner = E_GetOwner(ent)
+					if E_IsValid(owner) and owner:IsPlayer() then
+						_ent = owner
+					end
+				end
+			end
+
+			-- _ent is only set when we can find a player
+			if not _ent then return end
+
+			local streak = math.min(E_GetNW2Int(_ent, "killstreak", 0), maxstreak)
+			if streak < minstreak --[[or streak == 0]] then return end
+
+			local colorvar = P_IsBot(_ent) and "team_blue" or E_GetNW2String(_ent, "killstreakcolor", nil)
+			if not WeaponSheenColors[colorvar] then return end
+
+			local color = WeaponSheenColors[colorvar]:ToVector()
+			--local ratio = 1 --streak / maxstreak
+
+			MAT_SetVector(mat, self.ResultTo, color)
+
+			-- begin animated texture
+			local numFrames = TEX_GetNumAnimationFrames(MAT_GetTexture(mat, self.AnimatedTextureVar))
+			if numFrames <= 0 then return end
+
+			local curtime = CurTime()
+			local frametime = FrameTime()
+
+			local startTime = _ent.NextSheenStartTime or 0
+			local deltaTime = math.max(curtime - startTime, 0)
+			local prevTime = math.max(deltaTime - frametime, 0)
+
+			local frame = math.floor(baseFramerate * deltaTime) % numFrames
+			local prevFrame = math.floor(baseFramerate * prevTime) % numFrames
+
+			if prevFrame > frame then
+				frame = 0
+				--print("die", prevFrame, frame, streak, GetTimeBetweenAnims(streak))
+				_ent.NextSheenStartTime = curtime + GetTimeBetweenAnims(streak)
+			end
+
+			--print("EEE", frame)
+			--local frame = math.floor(RealTime() * baseFramerate) % TEX_GetNumAnimationFrames(MAT_GetTexture(mat, self.AnimatedTextureVar))
+			MAT_SetInt(mat, self.AnimatedTextureFrameVar, frame)
+		end
+	})
+end
 
 local function DrawKillstreakSheen(ent, owner, override)
 	if not IsValid(ent) or (ent:GetNoDraw() and not override) then return end
 	if not IsValid(owner) then owner = ent:GetOwner() or ent end
 	local streak = math.Clamp(owner:GetNW2Int("killstreak", 0), 0, maxstreak)
-	local color = owner:GetNW2String("killstreakcolor", nil)
+	local color = owner:IsBot() and "team_blue" or owner:GetNW2String("killstreakcolor", nil)
 
-	if colors[color] and streak > 0 and streak >= minstreak then
+	if WeaponSheenColors[color] and streak >= minstreak then
 		render.MaterialOverride(glow)
 		ent:DrawModel()
 		render.MaterialOverride(nil)
 	end
 end
 
-local function DrawPlayerWeaponSheen(ply)
+hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_tp", function(ply)
 	if ply.KSSheenRedraw or not ply:IsValid() then return end
 	ply.KSSheenRedraw = true
 	DrawKillstreakSheen(ply:GetActiveWeapon(), ply)
 	ply.KSSheenRedraw = false
-end
-hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_tp", DrawPlayerWeaponSheen)
+end)
 
-local function DrawFPWeaponSheen(vm, ply, wep)
+hook.Add("PostDrawViewModel", "ffgs_utils_killstreak_fp", function(vm, ply, wep)
 	if wep.VMRedraw then return end
 	if wep and (wep.CW20Weapon or wep.IsFAS2Weapon) then return end -- Handled separately
+	if wep and (wep.ArcCW or wep.ARC9 or wep.ArcticTacRP) then return end --No compatibility ):
 	wep.VMRedraw = true
 	DrawKillstreakSheen(vm, ply)
 	wep.VMRedraw = false
-end
-hook.Add("PostDrawViewModel", "ffgs_utils_killstreak_fp", DrawFPWeaponSheen)
+end)
 
 --PATCHES SECTION
 
@@ -362,7 +470,7 @@ if file.Exists("weapons/cw_base/shared.lua", "LUA") then
 			local streak = math.Clamp(owner:GetNW2Int("killstreak", 0), 0, maxstreak)
 			local color = owner:GetNW2String("killstreakcolor", nil)
 
-			if IsValid(_self.CW_VM) and colors[color] and streak > 0 and streak >= minstreak then
+			if IsValid(_self.CW_VM) and WeaponSheenColors[color] and streak >= minstreak then
 				render.MaterialOverride(glow)
 
 				if _self.ViewModelFlip then render.CullMode(MATERIAL_CULLMODE_CW) end
@@ -386,4 +494,80 @@ if file.Exists("weapons/cw_base/shared.lua", "LUA") then
 	cvars.AddChangeCallback(cv_cw20_override:GetName(), PatchCW20Draw, cv_cw20_override:GetName())
 
 	hook.Add("InitPostEntity", "ffgs_utils_killstreak_patch_cw20", PatchCW20Draw)
+end
+
+--MWBase Compat
+if file.Exists("weapons/mg_base/shared.lua", "LUA") then
+	local shoulddraw = true
+
+	local function DrawSheenMW(self, flags)
+		if not shoulddraw then return end
+
+		local wep = self:GetOwner()
+		if not IsValid(wep) then return end
+
+		local owner = wep:GetOwner()
+		if not IsValid(owner) then return end
+
+		local streak = math.Clamp(owner:GetNW2Int("killstreak", 0), 0, maxstreak)
+		local color = owner:GetNW2String("killstreakcolor", nil)
+
+		if WeaponSheenColors[color] and streak >= minstreak then
+			render.MaterialOverride(glow)
+
+			self.KSSheenPlayer = owner
+			self:DrawModel(flags)
+
+			local atts = wep:GetAllAttachmentsInUse()
+			for slot = #atts, 1, -1 do
+				local att = atts[slot]
+
+				if not IsValid(att.m_Model) then continue end
+
+				if att.hideModel then
+					render.SetStencilWriteMask(0xFF)
+					render.SetStencilTestMask(0xFF)
+					render.SetStencilReferenceValue(0)
+					render.SetStencilPassOperation(STENCIL_KEEP)
+					render.SetStencilZFailOperation(STENCIL_KEEP)
+					render.ClearStencil()
+					render.SetStencilEnable(true)
+					render.SetStencilReferenceValue(MWBASE_STENCIL_REFVALUE + 2)
+					render.SetStencilCompareFunction(STENCIL_NEVER)
+					render.SetStencilFailOperation(STENCIL_REPLACE)
+
+					att.hideModel:DrawModel(flags)
+
+					render.SetStencilCompareFunction(STENCIL_NOTEQUAL)
+					render.SetStencilFailOperation(STENCIL_KEEP)
+				end
+
+				att.m_Model:DrawModel(flags)
+
+				if att.hideModel then
+					render.SetStencilEnable(false)
+					render.ClearStencil()
+				end
+			end
+
+			render.MaterialOverride(nil)
+		end
+	end
+
+	local cv_shoulddraw = CreateClientConVar("cl_killstreak_mgbase_draw", "1", true, false)
+	local function UpdateCVars()
+		shoulddraw = cv_shoulddraw:GetBool()
+	end
+	cvars.RemoveChangeCallback(cv_shoulddraw:GetName(), cv_shoulddraw:GetName())
+	cvars.AddChangeCallback(cv_shoulddraw:GetName(), UpdateCVars, cv_shoulddraw:GetName())
+
+	hook.Add("PreRegisterSENT", "patch_mg_viewmodel", function(ENT, ClassName)
+		if ClassName ~= "mg_viewmodel" then return end
+
+		local Draw = ENT.Draw
+		ENT.Draw = function(self, flags, ...)
+			Draw(self, flags, ...)
+			DrawSheenMW(self, flags)
+		end
+	end)
 end
