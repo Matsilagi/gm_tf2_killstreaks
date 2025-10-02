@@ -38,7 +38,7 @@ if CLIENT then
 	cvars.AddChangeCallback("cl_killstreak_forcetf2font", updateFont, "cl_killstreak_forcetf2font")
 
 	hook.Add("HUDPaint", "ffgs_utils_killstreak_draw", function()
-		if not cv_drawhud:GetBool() or not cv_draw:GetBool() then return end
+		if not cv_drawhud:GetBool() or not cv_draw:GetBool() or hook.Run("ffgs_utils_killstreak_draw") then return end
 
 		local ply = LocalPlayer()
 		if not ply:IsValid() or not ply:Alive() then return end
