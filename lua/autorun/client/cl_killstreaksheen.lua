@@ -7,6 +7,8 @@
 local cv_matmode = CreateClientConVar("cl_killstreak_oldmat", "0", true, false)
 local cv_specular = GetConVar("mat_specular")
 local cv_debugmodel = GetConVar("cl_killstreak_eyeparticle_debug")
+local cv_minkills = GetConVar("sv_killstreakeyes_minkills")
+local cv_maxkills = GetConVar("sv_killstreakeyes_maxkills")
 
 CreateClientConVar("cl_killstreak_offset_l_right", "-1.50", true, true)
 CreateClientConVar("cl_killstreak_offset_l_up", "0.0", true, true)
@@ -91,7 +93,7 @@ hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply", function(ply)
 	local streak = math.Clamp(ply:GetNW2Int("killstreak", 0), 0, maxstreak)
 	local color = ply:IsBot() and "team_blue" or ply:GetNW2String("killstreakcolor", "")
 	local effect_id = ply:IsBot() and 1 or ply:GetNW2Int("killstreakeffect", 0)
-	local effect_name = string.format("killstreak_t%d_lvl%d", effect_id, streak >= 10 and 2 or 1)
+	local effect_name = string.format("killstreak_t%d_lvl%d", effect_id, streak >= cv_maxkills:GetInt() and 2 or 1)
 
 	local attach_id = ply:LookupAttachment("eyes")
 	local attach = attach_id > 0 and ply:GetAttachment(attach_id)
@@ -103,8 +105,8 @@ hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply", function(ply)
 	end
 
 	--INITIAL CHECKS AND EFFECT CONTROL
-	if streak < 5 or ply:GetNoDraw() or not ply:Alive() or not attach or
-		(#color == 0 or color == "none") or (effect_id > 7 or effect_id <= 0) or
+	if streak < cv_minkills:GetInt() or ply:GetNoDraw() or not ply:Alive() or not attach or
+		(#color == 0 or color == "none") or (effect_id > 11 or effect_id <= 0) or
 		(not ColorsLevel1[color] or not ColorsLevel2[color])
 		then
 		leye:StopParticleEmission()
@@ -193,9 +195,9 @@ hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply", function(ply)
 
 	-- update color based on streak level
 	local colorTbl
-	if streak >= 5 and streak < 10 then
+	if streak >= cv_minkills:GetInt() and streak < cv_maxkills:GetInt() then
 		colorTbl = ColorsLevel1
-	elseif streak >= 10 then
+	elseif streak >= cv_maxkills:GetInt() then
 		colorTbl = ColorsLevel2
 	end
 
@@ -299,7 +301,7 @@ do -- matproxy
 	local baseFramerate = 25 -- default to 25 per the vmt; i leave this to you to change/manipulate
 	-- you can also change this to be based on a value from the player inside of the matproxy's bind func
 
-	local MAX_KILLS = 10
+	local MAX_KILLS = 5
 	local MAX_SHEEN_WAIT = 5
 	local function GetTimeBetweenAnims(streak)
 		-- set the time between sheens based on kill streak

@@ -1,0 +1,8 @@
+"SpriteCard"
+{
+	"$baseTexture" "effects/workshop/animatedpetal_white"
+	"$translucent"	1
+	"$vertexalpha"	1
+	"$vertexcolor"	1
+ 	"$depthblend" 0
+}

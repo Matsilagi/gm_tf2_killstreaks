@@ -2,6 +2,12 @@
 -- Created by YuRaNnNzZZ
 -- Additional code changes by Matsilagi
 
+--SERVERSIDE CONVARS
+if SERVER then
+	CreateConVar("sv_killstreakeyes_minkills", 5, {FCVAR_ARCHIVE, FCVAR_NOTIFY},"min kills to get base eyeglow", 1, 20)
+	CreateConVar("sv_killstreakeyes_maxkills", 10, {FCVAR_ARCHIVE, FCVAR_NOTIFY}, "kills to get the max eye glow effect", 1, 20)
+end
+
 --HUD ELEMENTS / DRAWS
 if CLIENT then
 	--CONVARS CREATION
