@@ -3,15 +3,16 @@ TF2 Professional Killstreaks kit.
 Show your kills! Let them see how dangerous you are!
 
 Compatible with:
-Vanilla guns
-CW 2.0
-FAS 2.0
-Modern Warfare Base
-Arc9
-ArcCW
-TacRP
-Tactical Intervention
-Anything that doesnt use custom VM rendering contexts.
+- Vanilla guns
+- CW 2.0
+- FAS 2.0
+- Modern Warfare Base
+- Arc9
+- ArcCW
+- TacRP
+- Tactical Intervention
+
+Basically, anything that doesnt use custom VM rendering contexts.
 
 Workshop link: https://steamcommunity.com/sharedfiles/filedetails/?id=2921223728
 
