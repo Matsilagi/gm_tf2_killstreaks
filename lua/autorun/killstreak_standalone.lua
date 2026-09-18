@@ -2,6 +2,12 @@
 -- Created by YuRaNnNzZZ
 -- Additional code changes by Matsilagi
 
+--SERVERSIDE CONVARS
+if SERVER then
+	CreateConVar("sv_killstreakeyes_minkills", 5, {FCVAR_ARCHIVE, FCVAR_NOTIFY},"min kills to get base eyeglow", 1, 20)
+	CreateConVar("sv_killstreakeyes_maxkills", 10, {FCVAR_ARCHIVE, FCVAR_NOTIFY}, "kills to get the max eye glow effect", 1, 20)
+end
+
 --HUD ELEMENTS / DRAWS
 if CLIENT then
 	--CONVARS CREATION
@@ -32,7 +38,7 @@ if CLIENT then
 	cvars.AddChangeCallback("cl_killstreak_forcetf2font", updateFont, "cl_killstreak_forcetf2font")
 
 	hook.Add("HUDPaint", "ffgs_utils_killstreak_draw", function()
-		if not cv_drawhud:GetBool() or not cv_draw:GetBool() then return end
+		if not cv_drawhud:GetBool() or not cv_draw:GetBool() or hook.Run("ffgs_utils_killstreak_draw") then return end
 
 		local ply = LocalPlayer()
 		if not ply:IsValid() or not ply:Alive() then return end
