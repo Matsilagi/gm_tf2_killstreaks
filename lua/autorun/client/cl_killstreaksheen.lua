@@ -7,6 +7,8 @@
 local cv_matmode = CreateClientConVar("cl_killstreak_oldmat", "0", true, false)
 local cv_specular = GetConVar("mat_specular")
 local cv_debugmodel = GetConVar("cl_killstreak_eyeparticle_debug")
+local cv_minkills = GetConVar("sv_killstreakeyes_minkills")
+local cv_maxkills = GetConVar("sv_killstreakeyes_maxkills")
 
 CreateClientConVar("cl_killstreak_offset_l_right", "-1.50", true, true)
 CreateClientConVar("cl_killstreak_offset_l_up", "0.0", true, true)
@@ -91,7 +93,7 @@ hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply", function(ply)
 	local streak = math.Clamp(ply:GetNW2Int("killstreak", 0), 0, maxstreak)
 	local color = ply:IsBot() and "team_blue" or ply:GetNW2String("killstreakcolor", "")
 	local effect_id = ply:IsBot() and 1 or ply:GetNW2Int("killstreakeffect", 0)
-	local effect_name = string.format("killstreak_t%d_lvl%d", effect_id, streak >= 10 and 2 or 1)
+	local effect_name = string.format("killstreak_t%d_lvl%d", effect_id, streak >= cv_maxkills:GetInt() and 2 or 1)
 
 	local attach_id = ply:LookupAttachment("eyes")
 	local attach = attach_id > 0 and ply:GetAttachment(attach_id)
@@ -103,8 +105,8 @@ hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply", function(ply)
 	end
 
 	--INITIAL CHECKS AND EFFECT CONTROL
-	if streak < 5 or ply:GetNoDraw() or not ply:Alive() or not attach or
-		(#color == 0 or color == "none") or (effect_id > 7 or effect_id <= 0) or
+	if streak < cv_minkills:GetInt() or ply:GetNoDraw() or not ply:Alive() or not attach or
+		(#color == 0 or color == "none") or (effect_id > 11 or effect_id <= 0) or
 		(not ColorsLevel1[color] or not ColorsLevel2[color])
 		then
 		leye:StopParticleEmission()
@@ -193,9 +195,9 @@ hook.Add("PostPlayerDraw", "ffgs_utils_killstreak_ply", function(ply)
 
 	-- update color based on streak level
 	local colorTbl
-	if streak >= 5 and streak < 10 then
+	if streak >= cv_minkills:GetInt() and streak < cv_maxkills:GetInt() then
 		colorTbl = ColorsLevel1
-	elseif streak >= 10 then
+	elseif streak >= cv_maxkills:GetInt() then
 		colorTbl = ColorsLevel2
 	end
 
@@ -299,7 +301,7 @@ do -- matproxy
 	local baseFramerate = 25 -- default to 25 per the vmt; i leave this to you to change/manipulate
 	-- you can also change this to be based on a value from the player inside of the matproxy's bind func
 
-	local MAX_KILLS = 10
+	local MAX_KILLS = 5
 	local MAX_SHEEN_WAIT = 5
 	local function GetTimeBetweenAnims(streak)
 		-- set the time between sheens based on kill streak
@@ -395,7 +397,7 @@ end)
 hook.Add("PostDrawViewModel", "ffgs_utils_killstreak_fp", function(vm, ply, wep)
 	if wep.VMRedraw then return end
 	if wep and (wep.CW20Weapon or wep.IsFAS2Weapon) then return end -- Handled separately
-	if wep and (wep.ArcCW or wep.ARC9 or wep.ArcticTacRP) then return end --No compatibility ):
+	if wep and (wep.MilitaryConflictVietnam) then return end -- Not compatible D:
 	wep.VMRedraw = true
 	DrawKillstreakSheen(vm, ply)
 	wep.VMRedraw = false
@@ -570,4 +572,188 @@ if file.Exists("weapons/mg_base/shared.lua", "LUA") then
 			DrawSheenMW(self, flags)
 		end
 	end)
+end
+
+-- ARC9 COMPATIBILITY PATCH
+if file.Exists("weapons/arc9_base/shared.lua", "LUA") then
+	local cv_arc9_override = CreateClientConVar("cl_killstreak_patch_arc9", 1, true, false)
+
+	local function PatchARC9Draw()
+		local wep = weapons.GetStored("arc9_base")
+		if not wep then return end
+
+		if not cv_arc9_override:GetBool() then
+			if wep.ViewModelDrawn_PreKS then
+				wep.ViewModelDrawn = wep.ViewModelDrawn_PreKS
+				wep.ViewModelDrawn_PreKS = nil
+			end
+
+			return
+		end
+
+		wep.ViewModelDrawn_PreKS = wep.ViewModelDrawn_PreKS or wep.ViewModelDrawn
+		wep.ViewModelDrawn = function(_self, ent, flags, ...)
+			_self.ViewModelDrawn_PreKS(_self, ent, flags, ...)
+
+			flags = flags or STUDIO_RENDER
+			local isDepthPass = (bit.band(flags, STUDIO_SSAODEPTHTEXTURE) ~= 0) or (bit.band(flags, STUDIO_SHADOWDEPTHTEXTURE) ~= 0)
+			if isDepthPass then return end
+
+			local owner = _self:GetOwner()
+			if not IsValid(owner) then return end
+
+			local streak = math.Clamp(owner:GetNW2Int("killstreak", 0), 0, maxstreak)
+			local color = owner:IsBot() and "team_blue" or owner:GetNW2String("killstreakcolor", nil)
+
+			if not (WeaponSheenColors[color] and streak >= minstreak) then return end
+			if not _self.VModel then return end
+
+			render.MaterialOverride(glow)
+
+			for i = 1, #_self.VModel do
+				local model = _self.VModel[i]
+				if IsValid(model) and not model.NoDraw and not model.hidden then
+					model:DrawModel()
+				end
+			end
+
+			render.MaterialOverride(nil)
+		end
+	end
+
+	cvars.RemoveChangeCallback(cv_arc9_override:GetName(), cv_arc9_override:GetName())
+	cvars.AddChangeCallback(cv_arc9_override:GetName(), PatchARC9Draw, cv_arc9_override:GetName())
+
+	hook.Add("InitPostEntity", "ffgs_utils_killstreak_patch_arc9", PatchARC9Draw)
+end
+
+-- ARCCW COMPATIBILITY PATCH
+if file.Exists("weapons/arccw_base/shared.lua", "LUA") then
+	local cv_arccw_override = CreateClientConVar("cl_killstreak_patch_arccw", 1, true, false)
+
+	local function PatchArcCWDraw()
+		local wep = weapons.GetStored("arccw_base")
+		if not wep then return end
+
+		if not cv_arccw_override:GetBool() then
+			if wep.PostDrawViewModel_PreKS then
+				wep.PostDrawViewModel = wep.PostDrawViewModel_PreKS
+				wep.PostDrawViewModel_PreKS = nil
+			end
+
+			return
+		end
+
+		wep.PostDrawViewModel_PreKS = wep.PostDrawViewModel_PreKS or wep.PostDrawViewModel
+		wep.PostDrawViewModel = function(_self, ...)
+			_self.PostDrawViewModel_PreKS(_self, ...)
+
+			if ArcCW.VM_OverDraw then return end -- currently mid an internal re-draw (e.g. cheap scope), avoid recursing into it
+
+			local owner = _self:GetOwner()
+			if not IsValid(owner) then return end
+
+			local streak = math.Clamp(owner:GetNW2Int("killstreak", 0), 0, maxstreak)
+			local color = owner:IsBot() and "team_blue" or owner:GetNW2String("killstreakcolor", nil)
+
+			if not (WeaponSheenColors[color] and streak >= minstreak) then return end
+
+			render.MaterialOverride(glow)
+			_self:DrawCustomModel(false)
+			render.MaterialOverride(nil)
+		end
+	end
+
+	cvars.RemoveChangeCallback(cv_arccw_override:GetName(), cv_arccw_override:GetName())
+	cvars.AddChangeCallback(cv_arccw_override:GetName(), PatchArcCWDraw, cv_arccw_override:GetName())
+
+	hook.Add("InitPostEntity", "ffgs_utils_killstreak_patch_arccw", PatchArcCWDraw)
+end
+
+-- TACRP COMPATIBILITY PATCH
+if file.Exists("weapons/tacrp_base/shared.lua", "LUA") then
+	local cv_tacrp_override = CreateClientConVar("cl_killstreak_patch_tacrp", 1, true, false)
+
+	local function PatchTacRPDraw()
+		local wep = weapons.GetStored("tacrp_base")
+		if not wep then return end
+
+		if not cv_tacrp_override:GetBool() then
+			if wep.ViewModelDrawn_PreKS then
+				wep.ViewModelDrawn = wep.ViewModelDrawn_PreKS
+				wep.ViewModelDrawn_PreKS = nil
+			end
+
+			return
+		end
+
+		wep.ViewModelDrawn_PreKS = wep.ViewModelDrawn_PreKS or wep.ViewModelDrawn
+		wep.ViewModelDrawn = function(_self, ViewModel, flags, ...)
+			_self.ViewModelDrawn_PreKS(_self, ViewModel, flags, ...)
+
+			local isDepthPass = (bit.band(flags or 0, STUDIO_SSAODEPTHTEXTURE) ~= 0) or (bit.band(flags or 0, STUDIO_SHADOWDEPTHTEXTURE) ~= 0)
+			if isDepthPass then return end
+
+			local owner = _self:GetOwner()
+			if not IsValid(owner) then return end
+
+			local streak = math.Clamp(owner:GetNW2Int("killstreak", 0), 0, maxstreak)
+			local color = owner:IsBot() and "team_blue" or owner:GetNW2String("killstreakcolor", nil)
+
+			if not (WeaponSheenColors[color] and streak >= minstreak) then return end
+
+			render.MaterialOverride(glow)
+			_self:DrawCustomModel(false, false, isDepthPass)
+			render.MaterialOverride(nil)
+		end
+	end
+
+	cvars.RemoveChangeCallback(cv_tacrp_override:GetName(), cv_tacrp_override:GetName())
+	cvars.AddChangeCallback(cv_tacrp_override:GetName(), PatchTacRPDraw, cv_tacrp_override:GetName())
+
+	hook.Add("InitPostEntity", "ffgs_utils_killstreak_patch_tacrp", PatchTacRPDraw)
+end
+
+-- TACTICAL INTERVENTION COMPATIBILITY PATCH
+if file.Exists("weapons/tacint_base/shared.lua", "LUA") then
+	local cv_tacint_override = CreateClientConVar("cl_killstreak_patch_tacint", 1, true, false)
+
+	local function PatchTacIntDraw()
+		local wep = weapons.GetStored("tacint_base")
+		if not wep then return end
+
+		if not cv_tacint_override:GetBool() then
+			if wep.ViewModelDrawn_PreKS then
+				wep.ViewModelDrawn = wep.ViewModelDrawn_PreKS
+				wep.ViewModelDrawn_PreKS = nil
+			end
+
+			return
+		end
+
+		wep.ViewModelDrawn_PreKS = wep.ViewModelDrawn_PreKS or wep.ViewModelDrawn
+		wep.ViewModelDrawn = function(_self, ViewModel, flags, ...)
+			_self.ViewModelDrawn_PreKS(_self, ViewModel, flags, ...)
+
+			local isDepthPass = (bit.band(flags or 0, STUDIO_SSAODEPTHTEXTURE) ~= 0) or (bit.band(flags or 0, STUDIO_SHADOWDEPTHTEXTURE) ~= 0)
+			if isDepthPass then return end
+
+			local owner = _self:GetOwner()
+			if not IsValid(owner) then return end
+
+			local streak = math.Clamp(owner:GetNW2Int("killstreak", 0), 0, maxstreak)
+			local color = owner:IsBot() and "team_blue" or owner:GetNW2String("killstreakcolor", nil)
+
+			if not (WeaponSheenColors[color] and streak >= minstreak) then return end
+
+			render.MaterialOverride(glow)
+			_self:DrawCustomModel(false)
+			render.MaterialOverride(nil)
+		end
+	end
+
+	cvars.RemoveChangeCallback(cv_tacint_override:GetName(), cv_tacint_override:GetName())
+	cvars.AddChangeCallback(cv_tacint_override:GetName(), PatchTacIntDraw, cv_tacint_override:GetName())
+
+	hook.Add("InitPostEntity", "ffgs_utils_killstreak_patch_tacint", PatchTacIntDraw)
 end
